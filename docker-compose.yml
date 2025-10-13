@@ -27,7 +27,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
     volumes:
-      - ./superset_config_no_cors.py:/app/pythonpath/superset_config.py
+      - ./superset_config_minimal_test.py:/app/pythonpath/superset_config.py
       - ./superset_home:/app/superset_home
       - ./data:/app/data
     networks:
