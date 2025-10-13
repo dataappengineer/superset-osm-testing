@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7.0
+    container_name: superset_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - superset
+
+  superset:
+    image: apache/superset:6.0.0rc2
+    container_name: superset_app
+    restart: unless-stopped
+    depends_on:
+      - redis
+    ports:
+      - "8080:8088"
+    environment:
+      SUPERSET_SECRET_KEY: 2b897f3472fe5e1b1fbc6bd3ef50b7a40d72b776730f4b
+      FLASK_APP: superset
+      SUPERSET_CONFIG_PATH: /app/pythonpath/superset_config.py
+      SUPERSET_HOME: /app/superset_home
+      SQLALCHEMY_DATABASE_URI: sqlite:////app/superset_home/superset.db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./superset_config_no_cors.py:/app/pythonpath/superset_config.py
+      - ./superset_home:/app/superset_home
+      - ./data:/app/data
+    networks:
+      - superset
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        echo "Installing flask-cors..." &&
+        pip install flask-cors==5.0.1 &&
+        echo "Using SQLite database from mounted volume..." &&
+        echo "Starting Superset DB upgrade..." &&
+        superset db upgrade &&
+        echo "Creating Superset admin user..." &&
+        superset fab create-admin --username admin --firstname Superset --lastname Admin --email admin@example.com --password admin || echo "Admin user already exists" &&
+        echo "Loading example data..." &&
+        superset load_examples &&
+        echo "Initializing Superset..." &&
+        superset init &&
+        echo "Starting Superset server..." &&
+        superset run -p 8088 --with-threads --reload --debugger -h 0.0.0.0
+
+networks:
+  superset:
+    driver: bridge
+
+volumes:
+  redis_data:
+  superset_data:

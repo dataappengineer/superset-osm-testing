@@ -1,0 +1,33 @@
+country,region,latitude,longitude,gdp_per_capita,life_expectancy,unemployment_rate
+Italy,Lombardia,45.4642,9.1900,35000,83.2,6.8
+Italy,Lazio,41.9028,12.4964,33000,82.8,9.2
+Italy,Campania,40.8518,14.2681,18000,80.5,17.1
+Italy,Piemonte,45.0703,7.6869,30000,82.9,7.9
+Italy,Sicilia,37.5079,15.0830,17500,80.1,19.3
+Italy,Liguria,44.4056,8.9463,29000,83.5,8.4
+Italy,Emilia-Romagna,44.4949,11.3426,35500,83.8,5.1
+Italy,Toscana,43.7696,11.2558,32000,83.1,6.2
+Italy,Puglia,41.1177,16.8719,18500,81.2,14.6
+Italy,Veneto,45.4408,12.3155,33500,83.4,5.8
+France,Île-de-France,48.8566,2.3522,56000,82.4,7.8
+France,Rhône-Alpes,45.764,4.8357,35000,82.9,8.1
+France,Provence-Alpes-Côte d'Azur,43.2965,5.3698,28000,82.2,9.5
+France,Occitanie,43.6047,1.4442,26000,82.1,9.8
+France,Nouvelle-Aquitaine,44.8378,-0.5792,27000,82.3,8.9
+France,Pays de la Loire,47.2184,-1.5536,29000,82.6,7.4
+France,Grand Est,48.5734,7.7521,26500,81.8,8.7
+France,Hauts-de-France,50.6292,3.0573,23000,79.8,11.2
+Spain,Madrid,40.4168,-3.7038,36000,83.2,13.8
+Spain,Cataluña,41.3851,2.1734,32000,83.0,11.9
+Spain,Valencia,39.4699,-0.3763,24000,82.8,14.2
+Spain,Andalucía,37.3891,-5.9845,20000,81.5,21.6
+Spain,País Vasco,43.2627,-2.9253,38000,84.1,9.4
+Spain,Galicia,42.5751,-8.1339,23000,82.2,12.8
+Spain,Castilla y León,41.6488,-4.7281,26000,83.4,11.1
+Germany,Berlin,52.5200,13.4050,40000,81.2,9.3
+Germany,Hamburg,53.5511,9.9937,56000,81.0,6.8
+Germany,Bayern,48.1351,11.5820,47000,81.5,3.1
+Germany,Nordrhein-Westfalen,51.2277,6.7735,38000,80.8,7.1
+Germany,Baden-Württemberg,48.7758,9.1829,45000,81.7,3.4
+Germany,Niedersachsen,52.6367,9.8451,35000,80.9,5.9
+Germany,Sachsen,51.3397,12.3731,29000,80.4,7.8

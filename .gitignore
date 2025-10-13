@@ -1,0 +1,5 @@
+﻿superset_home/
+.env
+*.log
+__pycache__/
+.DS_Store
