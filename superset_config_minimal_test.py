@@ -19,38 +19,55 @@ AUTH_TYPE = AUTH_DB
 # AUTH_TYPE = AUTH_OID
 # CUSTOM_SECURITY_MANAGER = OIDCSecurityManager  # Uncomment if using OIDC
 
-# ===== CSRF CONFIGURATION TESTING =====
+# ===== CSRF CONFIGURATION =====
 
-# Test 1: Completely disable CSRF (quick test)
-WTF_CSRF_ENABLED = False  # START WITH THIS
+# 🔧 DEVELOPMENT MODE: CSRF Disabled (currently active)
+WTF_CSRF_ENABLED = False
 
-# Test 2: If Test 1 works, try enabling CSRF with exemptions
+# 🔒 PRODUCTION MODE: Enable CSRF when ready (uncomment block below)
 # WTF_CSRF_ENABLED = True
-# WTF_CSRF_EXEMPT_LIST = [
-#     '/api/v1/chart/',
-#     '/api/v1/dashboard/', 
-#     '/api/v1/slice/',
-#     '/api/v1/*'
-# ]
+# WTF_CSRF_TIME_LIMIT = None          # No time limit
+# WTF_CSRF_SSL_STRICT = False         # Allow HTTP in development
+# WTF_CSRF_SECRET_KEY = '3c9a8f4582gf6f2c2gdc7ce4fg60c8b51e83c887841g5c'
 
-# Test 3: CSRF with relaxed settings
+# 🎯 HYBRID MODE: CSRF enabled but exempt API endpoints (alternative)
+# WTF_CSRF_ENABLED = True
 # WTF_CSRF_TIME_LIMIT = None
 # WTF_CSRF_SSL_STRICT = False
-# WTF_CSRF_CHECK_DEFAULT = False
+# WTF_CSRF_SECRET_KEY = '3c9a8f4582gf6f2c2gdc7ce4fg60c8b51e83c887841g5c'
+# WTF_CSRF_EXEMPT_LIST = [
+#     '/api/v1/chart/',
+#     '/api/v1/dashboard/',
+#     '/api/v1/security/login',
+#     '/api/v1/dataset/',
+#     '/api/v1/slice/'
+# ]
 
-# ===== MINIMAL CORS CONFIGURATION =====
+# ===== CORS CONFIGURATION =====
 ENABLE_CORS = True
 CORS_OPTIONS = {
     'supports_credentials': True,
     'allow_headers': ['*'],
     'resources': ['*'],
-    'origins': ['http://localhost:8080', 'http://127.0.0.1:8080']
+    'origins': [
+        'http://localhost:8080',    # Superset
+        'http://127.0.0.1:8080',    # Superset alternative
+        'http://localhost:4200',    # Angular dev server
+        'http://localhost:3000'     # React dev server (if needed)
+    ]
 }
 
 # ===== SESSION CONFIGURATION =====
-SESSION_COOKIE_SECURE = False
+# Enhanced session security (matching v4 production standards)
+SESSION_COOKIE_SECURE = False  # Set to True in HTTPS production
 SESSION_COOKIE_HTTPONLY = True  
 SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Session timeout configuration
+PERMANENT_SESSION_LIFETIME = 3600  # 1 hour (3600 seconds)
+
+# Additional security headers
+TALISMAN_ENABLED = False  # Disable for development, enable in production
 
 # ===== MINIMAL FEATURE FLAGS =====
 FEATURE_FLAGS = {
@@ -62,15 +79,26 @@ FEATURE_FLAGS = {
 # Use default Superset logging
 
 print("=" * 60)
-print("🧪 MINIMAL CSRF TEST CONFIGURATION")
+print("� SUPERSET DEVELOPMENT CONFIGURATION")
 print("=" * 60)
 print(f"Authentication Type: {AUTH_TYPE}")
-print(f"CSRF Enabled: {WTF_CSRF_ENABLED}")
-print(f"Secret Key: {'SET' if SECRET_KEY and SECRET_KEY != 'YOUR_SECRET_KEY_HERE' else 'DEFAULT'}")
-print(f"CORS Enabled: {ENABLE_CORS}")
+print(f"CSRF Protection: {'DISABLED' if not WTF_CSRF_ENABLED else 'ENABLED'}")
+print(f"Secret Key: {'✅ SET' if SECRET_KEY and SECRET_KEY != 'YOUR_SECRET_KEY_HERE' else '❌ DEFAULT'}")
+print(f"CORS Enabled: {'✅ YES' if ENABLE_CORS else '❌ NO'}")
+print(f"Database: SQLite")
 print("=" * 60)
-print("🎯 TEST PLAN:")
-print("1. Start with CSRF disabled (WTF_CSRF_ENABLED = False)")
-print("2. If API works, gradually enable CSRF features")
-print("3. Compare DB auth vs OIDC auth behavior")
+print("🎯 CURRENT STATUS:")
+print("✅ CSRF: Disabled for development/testing")
+print("✅ Bearer tokens: Required for API authentication")
+print("✅ Angular ready: No CSRF token needed")
+print("✅ PowerShell scripts: Working")
+print("=" * 60)
+print("� TO ENABLE CSRF LATER:")
+print("1. Comment out: WTF_CSRF_ENABLED = False")
+print("2. Uncomment desired CSRF block above")
+print("3. Restart Superset container")
+print("4. Test with CSRF tokens in requests")
+print("=" * 60)
+print("⚠️  PRODUCTION REMINDER:")
+print("Enable CSRF protection before deploying to production!")
 print("=" * 60)
