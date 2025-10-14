@@ -7,7 +7,7 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione a
 > 📋 **Stato Validazione**: **9 tipi di chart completamente validati e testati** con Superset v6 API
 > - ✅ Table (RAW e AGGREGATE)
 > - ✅ Pivot Table (ROWS e COLUMNS) 
-> - ✅ Bar Chart (echarts_timeseries_bar)
+> - ✅ Bar Chart (echarts_timeseries_bar) - **Versione Corretta con Dataset Specifico**
 > - ✅ Pie Chart
 > - ✅ Line Chart (echarts_timeseries_line)
 > - ✅ Heat Map (heatmap_v2)
