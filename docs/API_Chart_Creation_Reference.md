@@ -97,19 +97,18 @@ Authorization: Bearer <access_token>
 
 **Parametri opzionali in params (v6):**
 - `adhoc_filters`: Filtri sui dati in formato array (default: [])
-  - `[{"col": "regione", "op": "==", "val": "Lombardia"}]` = filtra per regione Lombardia
-  - `[{"col": "importo", "op": ">", "val": 1000}]` = filtra importi maggiori di 1000
-  - `[{"col": "data", "op": ">=", "val": "2025-01-01"}]` = filtra da data specifica
+  - **Formato corretto v6**: `[{"expressionType":"SIMPLE","subject":"colonna","operator":">","comparator":100,"clause":"WHERE"}]`
+  - Operatori: `>`, `<`, `>=`, `<=`, `==`, `!=`
 - `row_limit`: Numero massimo di righe (default: 100)
 
-**Esempio validato con filtro ad-hoc:**
+**Esempio validato con filtro (FUNZIONANTE):**
 ```json
 {
   "datasource_id": 17,
   "datasource_type": "table",
-  "slice_name": "Test Chart with Filter",
+  "slice_name": "Table RAW with Filter",
   "viz_type": "table",
-  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"table\",\"adhoc_filters\":[{\"col\":\"daily_members_posting_messages\",\"op\":\">\",\"val\":100}],\"all_columns\":[\"date\",\"daily_members_posting_messages\"],\"row_limit\":100}"
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"table\",\"adhoc_filters\":[{\"expressionType\":\"SIMPLE\",\"subject\":\"daily_members_posting_messages\",\"operator\":\">\",\"comparator\":1,\"clause\":\"WHERE\"}],\"all_columns\":[\"date\",\"daily_members_posting_messages\"],\"row_limit\":100}"
 }
 ```
 
@@ -124,177 +123,61 @@ Authorization: Bearer <access_token>
 **Modalità AGGREGATE** (per metriche aggregate):
 
 **Parametri indispensabili:**
-- `query_mode`: "aggregate" - Raggruppa e aggrega dati (**obbligatorio**)
-- `groupby`: Colonne per raggruppamento (es. ["regione", "categoria"]) (**obbligatorio**)
-- `metrics` **oppure** `adhoc_metrics`: Metriche aggregate definite nel dataset o create al volo (**almeno una obbligatoria**)
+- `query_mode`: "aggregate" (**obbligatorio**)
+- `groupby`: Colonne per raggruppamento (es. ["date"]) (**obbligatorio**)
+- `metrics`: Metriche aggregate (es. ["count"]) (**obbligatorio**)
 
-**Parametri opzionali (default disponibili):**
-- `percent_metrics`: Metriche percentuali in formato array (default: nessuna)
-  - `["sum__importo"]` = mostra percentuale della metrica rispetto al totale
-  - `["count", "sum__vendite"]` = multiple metriche percentuali
-  - Le percentuali sono calcolate rispetto al totale complessivo
-- `adhoc_filters`: Filtri sui dati in formato array (default: nessun filtro)
-  - `[{"col": "regione", "op": "==", "val": "Lombardia"}]` = filtra per regione specifica
-  - `[{"col": "importo", "op": ">", "val": 1000}]` = filtra valori numerici
-  - `[{"col": "data", "op": ">=", "val": "2025-01-01"}]` = filtra date
-- `order_by_cols`: Ordinamento colonne in formato array (default: nessun ordinamento)
-  - `[["sum__importo", true]]` = ordina per metrica discendente
-  - `[["regione", false]]` = ordina per dimensione crescente
-  - `[["metric1", true], ["dimension1", false]]` = ordinamento multiplo
-- `row_limit`: Numero massimo di righe aggregate da restituire (default: 100)
-
-⚠️ **IMPORTANTE:**
-La chiave `metrics` si riferisce alle metriche predefinite già presenti nel dataset Superset (di default è disponibile solo `count`).
-Ecco delgi esempi: 
-> - `"count"` = conteggio record (sempre disponibile)
-> - `"sum__importo"` = somma della colonna "importo" (se definita nel dataset)
-> - `"avg__prezzo"` = media della colonna "prezzo" (se definita nel dataset)
-> - `"max__data"` = massimo della colonna "data" (se definita nel dataset)
-> 
-> Usa `GET /api/v1/dataset/{id}` per vedere le metriche disponibili!
->
-> 💡 **ALTERNATIVA: Metriche Adhoc (definite al volo tramite API)**
-> 
-> Se non hai metriche predefinite, puoi crearle direttamente "on the fly" nella richiesta usando `adhoc_metrics`:
-
-> 
-> ```json
-> "adhoc_metrics": [
->   {
->     "expressionType": "SIMPLE",
->     "column": {"column_name": "importo", "type": "DOUBLE"},
->     "aggregate": "SUM",
->     "label": "Totale Vendite"
->   },
->   {
->     "expressionType": "SIMPLE", 
->     "column": {"column_name": "prezzo", "type": "DOUBLE"},
->     "aggregate": "AVG",
->     "label": "Prezzo Medio"
->   },
->   {
->     "expressionType": "SQL",
->     "sqlExpression": "COUNT(DISTINCT customer_id)",
->     "label": "Clienti Unici"
->   }
-> ]
-> ```
-> 
-> **Tipi di aggregazione supportati:**
-> - `SUM`, `AVG`, `COUNT`, `COUNT_DISTINCT`, `MIN`, `MAX`
-> - `expressionType: "SIMPLE"` = aggregazione standard su colonna
-> - `expressionType: "SQL"` = espressione SQL personalizzata
-
-
-
-**API d'esempio (AGGREGATE mode)**:
+**Esempio validato AGGREGATE (FUNZIONANTE):**
 ```json
 {
-  "slice_name": "Tabella Vendite per Regione",
-  "viz_type": "table", 
-  "datasource_id": 1,
+  "datasource_id": 17,
   "datasource_type": "table",
-  "params": {
-    "datasource": "1__table",
-    "viz_type": "table",
-    "slice_id": null,
-    "url_params": {},
-    "granularity_sqla": null,
-    "time_range": "No filter",
-    "query_mode": "aggregate",
-    "groupby": ["regione"],
-    "metrics": [],
-    "adhoc_metrics": [
-      {
-        "expressionType": "SIMPLE",
-        "column": {"column_name": "importo", "type": "DOUBLE"},
-        "aggregate": "SUM",
-        "label": "Totale Vendite"
-      }
-    ],
-    "all_columns": [],
-    "percent_metrics": [],
-    "adhoc_filters": [
-      {"col": "regione", "op": "!=", "val": null}
-    ],
-    "order_by_cols": [["Totale Vendite", true]],
-    "order_desc": true,
-    "show_totals": false,
-    "table_timestamp_format": "smart_date",
-    "page_length": 0,
-    "include_search": false,
-    "show_cell_bars": true,
-    "row_limit": 100,
-    "extra_form_data": {}
-  },
-  "query_context": {
-    "datasource": {"id": 1, "type": "table"},
-    "queries": [{
-      "columns": ["regione"],
-      "metrics": [
-        {
-          "expressionType": "SIMPLE",
-          "column": {"column_name": "importo", "type": "DOUBLE"},
-          "aggregate": "SUM",
-          "label": "Totale Vendite"
-        }
-      ],
-      "row_limit": 100
-    }]
-  }
+  "slice_name": "Table AGGREGATE",
+  "viz_type": "table",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"table\",\"query_mode\":\"aggregate\",\"groupby\":[\"date\"],\"metrics\":[\"count\"],\"adhoc_filters\":[],\"row_limit\":100,\"order_desc\":true}"
+}
 ```
-----
+
+---
 
 ### 2. **Pivot Table** - Tabella Pivot
 
-> 🔄 **Mappatura UI → API Parameters:**
-> 
-> | **UI Superset** | **API Parameter (legacy)** | **API Parameter (pivot_table_v2)** | **Descrizione** |
-> |-----------------|---------------------------|-------------------------------|-----------------|
-> | **Rows**        | `groupby`                 | `groupbyColumns`               | Righe della pivot |
-> | **Columns**     | `columns`                 | `groupbyRows`                   | Colonne della pivot |
-> | **Metrics**     | `metrics`                 | `metrics`                       | Valori da aggregare |
-> | **Aggregation** | `pandas_aggfunc`          | `aggregateFunction`             | Funzione di aggregazione |
-> | **Show totals** | `pivot_margins`           | (non usato, v2 mostra sempre)   | Mostra totali marginali |
+**Endpoint:** `POST /api/v1/chart/`
 
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "pivot_table_v2" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
 
-**Parametri indispensabili (pivot_table_v2):**
-- `groupbyColumns`: Righe della pivot (es. ["Provincia"])
-- `groupbyRows`: Colonne della pivot (es. ["Comune"])
-- `metrics`: Nomi delle metriche già definite nel dataset
+**Parametri chiave in params:**
+- `groupbyColumns`: Righe della pivot (es. ["date"])
+- `groupbyRows`: Colonne della pivot (es. [])
+- `metrics`: Metriche (es. ["count"])
+- `metricsLayout`: "ROWS" o "COLUMNS" per disposizione metriche
 
-**Parametri opzionali (pivot_table_v2):**
-- `aggregateFunction`: Funzione di aggregazione (default: "Sum")
-- `metricsLayout`: Disposizione metriche (default: "ROWS")
-- `row_limit`: Limite righe (default: 10000)
-- `order_desc`: Ordinamento discendente (default: true)
-- `valueFormat`: Formato valori (default: "SMART_NUMBER")
-- `date_format`: Formato data (default: "smart_date")
-- `rowOrder`, `colOrder`: Ordinamento righe/colonne (default: "key_a_to_z")
+**Esempio PIVOT - Metrics on ROWS (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 17,
+  "datasource_type": "table",
+  "slice_name": "Pivot Table (Metrics on ROWS)",
+  "viz_type": "pivot_table_v2",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"pivot_table_v2\",\"groupbyColumns\":[\"date\"],\"groupbyRows\":[],\"metrics\":[\"count\"],\"metricsLayout\":\"ROWS\",\"adhoc_filters\":[],\"row_limit\":10000,\"aggregateFunction\":\"Sum\"}"
+}
+```
 
-> 📊 **Esempio Pivot con `pivot_table_v2` :**
-> ```json
-> {
->   "datasource": "1__table",
->   "viz_type": "pivot_table_v2",
->   "groupbyColumns": ["Provincia"],
->   "groupbyRows": ["Comune"],
->   "time_grain_sqla": "P1D",
->   "temporal_columns_lookup": {},
->   "metrics": ["count"],
->   "metricsLayout": "ROWS",
->   "adhoc_filters": [],
->   "row_limit": 10000,
->   "order_desc": true,
->   "aggregateFunction": "Sum",
->   "valueFormat": "SMART_NUMBER",
->   "date_format": "smart_date",
->   "rowOrder": "key_a_to_z",
->   "colOrder": "key_a_to_z",
->   "extra_form_data": {},
->   "dashboards": []
-> }
-> ```
+**Esempio PIVOT - Metrics on COLUMNS (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 17,
+  "datasource_type": "table",
+  "slice_name": "Pivot Table (Metrics on COLUMNS)",
+  "viz_type": "pivot_table_v2",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"pivot_table_v2\",\"groupbyColumns\":[\"date\"],\"groupbyRows\":[],\"metrics\":[\"count\"],\"metricsLayout\":\"COLUMNS\",\"adhoc_filters\":[],\"row_limit\":10000,\"aggregateFunction\":\"Sum\"}"
+}
+```
 
 
 ### 3. **Bar Chart** - Grafico a Barre
