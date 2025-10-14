@@ -70,16 +70,6 @@ Authorization: Bearer <access_token>
 **Endpoint:**  
 `POST /api/v1/chart/`
 
-> 🔄 **Mappatura UI → API Parameters (Superset v6):**
-> 
-> **Modalità RAW:**
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **Columns** | `all_columns` | Colonne da visualizzare |
-> | **Filters** | `adhoc_filters` | Filtri sui dati |
-> | **Ordering** | Non supportato direttamente | Ordinamento colonne |
-> | **Server Pagination** | Non supportato direttamente | Paginazione server-side |
-> 
 
 **Modalità RAW** (per visualizzare record effettivi):
 
@@ -89,17 +79,6 @@ Authorization: Bearer <access_token>
 - `slice_name`: Nome del chart (**obbligatorio**)
 - `viz_type`: "table" (**obbligatorio**)
 - `params`: Stringa JSON con configurazione chart (**obbligatorio**)
-
-**Struttura params per v6 (JSON string):**
-```json
-{
-  "datasource": {"id": DATASET_ID, "type": "table"},
-  "viz_type": "table",
-  "adhoc_filters": [],
-  "all_columns": ["colonna1", "colonna2", "colonna3"],
-  "row_limit": 100
-}
-```
 
 **API d'esempio (v6) - versione validata e funzionante**:
 ```json
@@ -115,8 +94,6 @@ Authorization: Bearer <access_token>
 > ⚠️ **IMPORTANTE per v6:**
 > - Il campo `params` deve essere una **stringa JSON**, non un oggetto JSON
 > - Il campo `datasource` dentro params usa la struttura `{"id": NUMBER, "type": "table"}`
-> - Non è più necessario il campo `query_context` complesso
-> - La struttura è più semplice rispetto alla v4
 
 **Parametri opzionali in params (v6):**
 - `adhoc_filters`: Filtri sui dati in formato array (default: [])
@@ -124,34 +101,25 @@ Authorization: Bearer <access_token>
   - `[{"col": "importo", "op": ">", "val": 1000}]` = filtra importi maggiori di 1000
   - `[{"col": "data", "op": ">=", "val": "2025-01-01"}]` = filtra da data specifica
 - `row_limit`: Numero massimo di righe (default: 100)
-- `all_columns`: Array di nomi colonne da visualizzare (**obbligatorio per RAW mode**)
 
-**PowerShell esempio validato:**
-```powershell
-$body = @{
-    datasource_id = 17
-    datasource_type = "table"
-    slice_name = "Test Chart $(Get-Date -Format 'HHmmss')"
-    viz_type = "table"
-    params = "{`"datasource`":{`"id`":17,`"type`":`"table`"},`"viz_type`":`"table`",`"adhoc_filters`":[],`"all_columns`":[`"date`",`"daily_members_posting_messages`"],`"row_limit`":100}"
-} | ConvertTo-Json
+**Esempio validato con filtro ad-hoc:**
+```json
+{
+  "datasource_id": 17,
+  "datasource_type": "table",
+  "slice_name": "Test Chart with Filter",
+  "viz_type": "table",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"table\",\"adhoc_filters\":[{\"col\":\"daily_members_posting_messages\",\"op\":\">\",\"val\":100}],\"all_columns\":[\"date\",\"daily_members_posting_messages\"],\"row_limit\":100}"
+}
 ```
 
+
 > 📝 **NOTA su datasource v6:**
-> - `"datasource": {"id": 17, "type": "table"}` è la struttura v6 validata
-> - NON usare più la vecchia struttura v4: `"datasource": "17__table"`
 > - L'ID numerico deve corrispondere al dataset esistente in Superset
 > - La risposta includerà l'ID del chart creato per riferimenti futuri
 
 > **Modalità AGGREGATE:**
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **Dimensions** | `groupby` | Colonne per raggruppamento |
-> | **Metrics** | `metrics` | Metriche da calcolare |
-> | **Percentage Metrics** | `percent_metrics` | Metriche percentuali |
-> | **Filters** | `adhoc_filters` | Filtri sui dati |
-> | **Sort by** | `order_by_cols` | Ordinamento colonne |
-> | **Row limit** | `row_limit` | Limite righe |
+>
 
 **Modalità AGGREGATE** (per metriche aggregate):
 
