@@ -203,25 +203,28 @@ Authorization: Bearer <access_token>
 - `params`: Stringa JSON con configurazione (**obbligatorio**)
 
 **Parametri chiave in params:**
-- `x_axis`: Colonna per asse X (es. "date")
+- `x_axis`: Colonna per asse X (es. "order_date")
 - `metrics`: Metriche per asse Y (es. ["count"])
-- `groupby`: Raggrupamenti opzionali (es. [])
+- `groupby`: Raggrupamenti per serie (es. ["deal_size"])
+- `time_grain_sqla`: Granularità temporale (es. "P1M")
 - `orientation`: "vertical" o "horizontal"
 
 **Esempio validato (FUNZIONANTE):**
 ```json
 {
-  "datasource_id": 17,
+  "datasource_id": 9,
   "datasource_type": "table",
-  "slice_name": "Bar Chart - Date vs Count",
+  "slice_name": "Bar Chart - Order Date vs Count by Deal Size",
   "viz_type": "echarts_timeseries_bar",
-  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"echarts_timeseries_bar\",\"x_axis\":\"date\",\"metrics\":[\"count\"],\"groupby\":[],\"adhoc_filters\":[],\"row_limit\":50,\"color_scheme\":\"bnbColors\",\"orientation\":\"vertical\",\"show_legend\":true,\"rich_tooltip\":true}"
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"echarts_timeseries_bar\",\"x_axis\":\"order_date\",\"time_grain_sqla\":\"P1M\",\"x_axis_sort_asc\":true,\"x_axis_sort_series\":\"name\",\"x_axis_sort_series_ascending\":true,\"metrics\":[\"count\"],\"groupby\":[\"deal_size\"],\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"order_desc\":true,\"row_limit\":10000,\"truncate_metric\":true,\"show_empty_columns\":true,\"comparison_type\":\"values\",\"annotation_layers\":[],\"forecastPeriods\":10,\"forecastInterval\":0.8,\"orientation\":\"vertical\",\"x_axis_title_margin\":15,\"y_axis_title_margin\":15,\"y_axis_title_position\":\"Left\",\"sort_series_type\":\"sum\",\"color_scheme\":\"supersetColors\",\"only_total\":true,\"show_legend\":true,\"legendType\":\"scroll\",\"legendOrientation\":\"top\",\"x_axis_time_format\":\"smart_date\",\"y_axis_format\":\"SMART_NUMBER\",\"truncateXAxis\":true,\"y_axis_bounds\":[null,null],\"rich_tooltip\":true,\"tooltipTimeFormat\":\"smart_date\",\"extra_form_data\":{},\"dashboards\":[]}"
 }
 ```
 
 > ⚠️ **IMPORTANTE per v6:**
 > - Usare `viz_type`: "echarts_timeseries_bar" (non "dist_bar")
-> - Il parametro principale è `x_axis` (non `groupby` per l'asse X)
+> - Il parametro principale è `x_axis` per l'asse X
+> - Usare `groupby` per raggruppamenti/serie multiple
+> - Il parametro `time_grain_sqla` controlla la granularità temporale
 > - Il campo `params` deve essere una stringa JSON
 
 ---
