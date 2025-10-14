@@ -250,69 +250,39 @@ Authorization: Bearer <access_token>
 
 ### 5. **Line Chart** - Grafico a Linee
 
-> 🔄 **Mappatura UI → API Parameters:**
-> 
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **X-axis** | `granularity_sqla` | Colonna temporale |
-> | **Time Range** | `time_range` | Range temporale |
-> | **Time Grain** | `time_grain_sqla` | Granularità tempo |
-> | **Metrics** | `metrics` | Metriche asse Y |
-> | **Dimensions** | `groupby` | Serie multiple |
-> | **Contribution** | `contribution` | Modalità contribuzione |
-> | **Series limit** | `series_limit` | Limite numero serie |
-> | **Row limit** | `row_limit` | Limite righe dataset |
-
-**Parametri specifici**:
+**Endpoint:** `POST /api/v1/chart/`
 
 **Parametri indispensabili:**
-- `granularity_sqla`: Colonna temporale per X-axis (es. "data_vendita") (**obbligatorio**)
-- `metrics`: Metriche per asse Y (es. ["sum__importo"]) (**almeno una obbligatoria**)
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "echarts_timeseries_line" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
 
-**Parametri opzionali (default disponibili):**
-- `time_range`: Range temporale (default: "No filter")
-- `time_grain_sqla`: Granularità tempo (default: nessuna)
-- `groupby`: Dimensions - linee multiple per categoria (default: nessuna)
-- `contribution`: Contribution mode (true/false, default: false)
-- `series_limit`: Series limit (default: nessun limite)
-- `line_interpolation`: Tipo interpolazione (default: "linear")
-- `show_markers`: Mostra punti sui dati (default: false)
-- `y_axis_format`: Formato asse Y (default: ",.0f")
-- `color_scheme`: Schema colori (default: "bnbColors")
-- `row_limit`: Row limit (default: 1000)
+**Parametri chiave in params:**
+- `granularity_sqla`: Colonna temporale per asse X (es. "date")
+- `metrics`: Metriche per asse Y (es. ["count"])
+- `groupby`: Raggrupamenti per serie multiple (es. [])
+- `show_legend`: Mostra legenda
+- `rich_tooltip`: Tooltip dettagliato
 
-**API d'esempio**:
+**Esempio validato (FUNZIONANTE):**
 ```json
 {
-  "slice_name": "Trend Vendite nel Tempo - Line Chart",
-  "viz_type": "line",
-  "datasource_id": 15,
+  "datasource_id": 17,
   "datasource_type": "table",
-  "params": {
-    "granularity_sqla": "data_vendita",
-    "time_grain_sqla": "P1M",
-    "time_range": "Last year",
-    "metrics": ["sum__importo"],
-    "groupby": ["categoria_prodotto"],
-    "line_interpolation": "linear",
-    "show_markers": true,
-    "y_axis_format": ",.0f",
-    "color_scheme": "bnbColors"
-  },
-  "query_context": {
-    "datasource": {"id": 15, "type": "table"},
-    "queries": [{
-      "columns": ["categoria_prodotto"],
-      "metrics": ["sum__importo"],
-      "granularity": "data_vendita",
-      "time_range": "Last year",
-      "extras": {
-        "time_grain_sqla": "P1M"
-      }
-    }]
-  }
+  "slice_name": "Line Chart - Trend over Time",
+  "viz_type": "echarts_timeseries_line",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"echarts_timeseries_line\",\"granularity_sqla\":\"date\",\"metrics\":[\"count\"],\"groupby\":[],\"adhoc_filters\":[],\"row_limit\":1000,\"color_scheme\":\"bnbColors\",\"show_legend\":true,\"rich_tooltip\":true}"
 }
 ```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "echarts_timeseries_line" 
+> - Il parametro principale è `granularity_sqla` per l'asse temporale
+> - Il campo `params` deve essere una stringa JSON
+
+---
 
 ### 6. **Heat Map** - Mappa di Calore
 
