@@ -217,61 +217,36 @@ Authorization: Bearer <access_token>
 
 ### 4. **Pie Chart** - Grafico a Torta
 
-> 🔄 **Mappatura UI → API Parameters:**
-> 
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **Dimensions** | `groupby` | Categorie per spicchi |
-> | **Metric** | `metric` | Valore per dimensioni |
-> | **Donut** | `donut` | Stile ciambella |
-> | **Show Labels** | `show_labels` | Mostra etichette |
-> | **Labels Outside** | `labels_outside` | Etichette esterne |
-> | **Outer Radius** | `outerRadius` | Raggio esterno |
-> | **Inner Radius** | `innerRadius` | Raggio interno |
-
-**Parametri specifici**:
+**Endpoint:** `POST /api/v1/chart/`
 
 **Parametri indispensabili:**
-- `groupby`: Colonne da raggruppare (es. ["categoria_prodotto", "regione"]) (**obbligatorio**)
-- `metric`: Metrica singola per dimensioni spicchi (es. "sum__importo") (**obbligatorio**)
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "pie" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
 
-**Parametri opzionali (default disponibili):**
-- `donut`: Stile ciambella con buco centrale (true/false, default: false)
-- `show_labels`: Mostra etichette sui spicchi (true/false, default: true)
-- `labels_outside`: Etichette fuori dal grafico (true/false, default: false)
-- `color_scheme`: Schema colori (default: "bnbColors")
-- `outerRadius`: Raggio esterno in % (default: 70)
-- `innerRadius`: Raggio interno per donut in % (default: 30)
-- `number_format`: Formato numeri (default: ",.0f")
+**Parametri chiave in params:**
+- `groupby`: Colonne per categorie spicchi (es. ["date"])
+- `metric`: Metrica singola per dimensioni (es. "count")
+- `donut`: Stile ciambella (true/false)
+- `show_labels`: Mostra etichette sui spicchi
 
-**API d'esempio**:
+**Esempio validato (FUNZIONANTE):**
 ```json
 {
-  "slice_name": "Distribuzione Vendite per Categoria - Pie Chart",
-  "viz_type": "pie",
-  "datasource_id": 15,
+  "datasource_id": 17,
   "datasource_type": "table",
-  "params": {
-    "groupby": ["categoria_prodotto"],
-    "metric": "sum__importo",
-    "donut": false,
-    "show_labels": true,
-    "labels_outside": true,
-    "color_scheme": "google",
-    "outerRadius": 70,
-    "innerRadius": 30,
-    "number_format": ",.0f"
-  },
-  "query_context": {
-    "datasource": {"id": 15, "type": "table"},
-    "queries": [{
-      "columns": ["categoria_prodotto"],
-      "metrics": ["sum__importo"],
-      "row_limit": 20
-    }]
-  }
+  "slice_name": "Pie Chart - Distribution by Date",
+  "viz_type": "pie",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"pie\",\"groupby\":[\"date\"],\"metric\":\"count\",\"adhoc_filters\":[],\"row_limit\":50,\"color_scheme\":\"bnbColors\",\"donut\":false,\"show_labels\":true,\"labels_outside\":false,\"outerRadius\":70,\"innerRadius\":30}"
 }
 ```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Il parametro `metric` deve essere una stringa singola (non array)
+> - Usare `groupby` per le categorie dei spicchi
+> - Il campo `params` deve essere una stringa JSON
 
 ### 5. **Line Chart** - Grafico a Linee
 
