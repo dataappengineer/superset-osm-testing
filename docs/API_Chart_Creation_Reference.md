@@ -37,7 +37,7 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione a
 
 Prima di effettuare qualsiasi chiamata alle API di Superset, è necessario autenticarsi per ottenere un token JWT. Questo token va incluso nell'header `Authorization` di tutte le richieste successive.
 
-- **API_BASE**: URL base delle API REST di Superset (es: `http://localhost:8088/api/v1`)
+- **API_BASE**: URL base delle API REST di Superset (es: `http://localhost:8080/api/v1`)
 - **Token di autenticazione**: Token JWT ottenuto tramite login (`/security/login`)
 
 **Endpoint:**  
@@ -70,87 +70,78 @@ Authorization: Bearer <access_token>
 **Endpoint:**  
 `POST /api/v1/chart/`
 
-> 🔄 **Mappatura UI → API Parameters:**
+> 🔄 **Mappatura UI → API Parameters (Superset v6):**
 > 
 > **Modalità RAW:**
 > | **UI Superset** | **API Parameter** | **Descrizione** |
 > |-----------------|------------------|-----------------|
 > | **Columns** | `all_columns` | Colonne da visualizzare |
 > | **Filters** | `adhoc_filters` | Filtri sui dati |
-> | **Ordering** | `order_by_cols` | Ordinamento colonne |
-> | **Server Pagination** | `server_pagination` | Paginazione server-side |
+> | **Ordering** | Non supportato direttamente | Ordinamento colonne |
+> | **Server Pagination** | Non supportato direttamente | Paginazione server-side |
 > 
 
 **Modalità RAW** (per visualizzare record effettivi):
 
-**Parametri indispensabili:**
-- `query_mode`: "raw" - Mostra dati non aggregati dal dataset (**obbligatorio**)
-- `all_columns`: Array di nomi colonne da visualizzare (**obbligatorio**)
+**Parametri indispensabili per Superset v6:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "table" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione chart (**obbligatorio**)
 
-**Parametri opzionali (default disponibili):**
-- `adhoc_filters`: Filtri sui dati in formato array (default: nessun filtro)
-  - `[{"col": "regione", "op": "==", "val": "Lombardia"}]` = filtra per regione Lombardia
-  - `[{"col": "importo", "op": ">", "val": 1000}]` = filtra importi maggiori di 1000
-  - `[{"col": "data", "op": ">=", "val": "2025-01-01"}]` = filtra da data specifica
-- `order_by_cols`: Ordinamento colonne in formato array (default: nessun ordinamento)
-  - `[["colonna1", true]]` = ordina per colonna1 discendente (Z→A, 100→1)
-  - `[["colonna1", false]]` = ordina per colonna1 crescente (A→Z, 1→100)
-  - `[["col1", true], ["col2", false]]` = ordinamento multiplo
-- `server_pagination`: Paginazione server-side (true/false, default: false)
-  - `true` = paginazione gestita dal server (per dataset grandi)
-  - `false` = tutti i dati caricati in una volta (solo per dataset piccoli)
-- `row_limit`: Numero massimo di righe (default: 100)
-- `table_timestamp_format`: Formato timestamp (default: "smart_date")
-  - `"smart_date"` = formato intelligente (es. "2 ore fa", "ieri")
-  - `"yyyy-MM-dd"` = formato data (es. "2025-09-29")
-  - `"yyyy-MM-dd HH:mm:ss"` = formato completo con ora
-
-
-**API d'esempio (RAW mode) - versione minima e commentata**:
-```jsonc
-// Esempio di chiamata POST /api/v1/chart/ per una tabella RAW
-// - params: definisce la configurazione della visualizzazione (come la vedi in Superset)
-// - query_context: definisce la query SQL sottostante (colonne, metriche, limiti, ecc)
-// - Alcuni parametri (es. datasource, colonne) sono ripetuti per separare logica di query e visualizzazione
-// - "datasource": "1__table" è la forma raccomandata: ID numerico + tipo (non il nome del dataset!)
-// - Puoi omettere campi come granularity_sqla, time_range, url_params se non servono
-// - groupby e metrics possono essere lasciati vuoti in modalità RAW
+**Struttura params per v6 (JSON string):**
+```json
 {
-  "slice_name": "Tabella Dataset - Dati Raw",
+  "datasource": {"id": DATASET_ID, "type": "table"},
   "viz_type": "table",
-  "datasource_id": 1,
-  "datasource_type": "table",
-  "params": {
-    "datasource": "1__table", // ID e tipo del dataset (NON il nome!)
-    "viz_type": "table",
-    "query_mode": "raw",
-    "all_columns": ["column1", "column2", "column3"],
-    "adhoc_filters": [
-      {"col": "column1", "op": "!=", "val": null}
-    ],
-    "order_by_cols": [["column1", true]],
-    "server_pagination": true,
-    "order_desc": true,
-    "show_totals": false,
-    "table_timestamp_format": "smart_date",
-    "row_limit": 100
-  },
-  "query_context": {
-    "datasource": {"id": 1, "type": "table"},
-    "queries": [{
-      "columns": ["column1", "column2", "column3"],
-      "metrics": [],
-      "row_limit": 100
-    }]
-  }
+  "adhoc_filters": [],
+  "all_columns": ["colonna1", "colonna2", "colonna3"],
+  "row_limit": 100
 }
 ```
 
- NOTA su "datasource":
-- "datasource": "1__table" significa: usa il dataset con ID 1 e tipo "table".
- - NON usare il nome del dataset (es. "table_1") in questo campo: è meno robusto e può causare errori.
- - L'ID numerico è sempre preferibile e universale.
---------
+**API d'esempio (v6) - versione validata e funzionante**:
+```json
+{
+  "datasource_id": DATASET_ID,
+  "datasource_type": "table",
+  "slice_name": "Nome del Chart",
+  "viz_type": "table",
+  "params": "{\"datasource\":{\"id\":DATASET_ID,\"type\":\"table\"},\"viz_type\":\"table\",\"adhoc_filters\":[],\"all_columns\":[\"colonna1\",\"colonna2\",\"colonna3\"],\"row_limit\":100}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Il campo `params` deve essere una **stringa JSON**, non un oggetto JSON
+> - Il campo `datasource` dentro params usa la struttura `{"id": NUMBER, "type": "table"}`
+> - Non è più necessario il campo `query_context` complesso
+> - La struttura è più semplice rispetto alla v4
+
+**Parametri opzionali in params (v6):**
+- `adhoc_filters`: Filtri sui dati in formato array (default: [])
+  - `[{"col": "regione", "op": "==", "val": "Lombardia"}]` = filtra per regione Lombardia
+  - `[{"col": "importo", "op": ">", "val": 1000}]` = filtra importi maggiori di 1000
+  - `[{"col": "data", "op": ">=", "val": "2025-01-01"}]` = filtra da data specifica
+- `row_limit`: Numero massimo di righe (default: 100)
+- `all_columns`: Array di nomi colonne da visualizzare (**obbligatorio per RAW mode**)
+
+**PowerShell esempio validato:**
+```powershell
+$body = @{
+    datasource_id = 17
+    datasource_type = "table"
+    slice_name = "Test Chart $(Get-Date -Format 'HHmmss')"
+    viz_type = "table"
+    params = "{`"datasource`":{`"id`":17,`"type`":`"table`"},`"viz_type`":`"table`",`"adhoc_filters`":[],`"all_columns`":[`"date`",`"daily_members_posting_messages`"],`"row_limit`":100}"
+} | ConvertTo-Json
+```
+
+> 📝 **NOTA su datasource v6:**
+> - `"datasource": {"id": 17, "type": "table"}` è la struttura v6 validata
+> - NON usare più la vecchia struttura v4: `"datasource": "17__table"`
+> - L'ID numerico deve corrispondere al dataset esistente in Superset
+> - La risposta includerà l'ID del chart creato per riferimenti futuri
 
 > **Modalità AGGREGATE:**
 > | **UI Superset** | **API Parameter** | **Descrizione** |
