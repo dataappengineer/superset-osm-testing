@@ -4,6 +4,17 @@
 ## 🎯 Obiettivo
 Documentazione dettagliata dei parametri API e esempi pratici per la creazione automatica di chart e dashboard in Superset tramite chiamate REST.
 
+> 📋 **Stato Validazione**: **9 tipi di chart completamente validati e testati** con Superset v6 API
+> - ✅ Table (RAW e AGGREGATE)
+> - ✅ Pivot Table (ROWS e COLUMNS) 
+> - ✅ Bar Chart (echarts_timeseries_bar)
+> - ✅ Pie Chart
+> - ✅ Line Chart (echarts_timeseries_line)
+> - ✅ Heat Map (heatmap_v2)
+> - ✅ Tree Chart (tree_chart)
+> - ✅ Scatter Plot (echarts_timeseries_scatter)
+> - ✅ Big Number (big_number_total)
+
 ---
 ## 📑 Indice
 
@@ -286,25 +297,19 @@ Authorization: Bearer <access_token>
 
 ### 6. **Heat Map** - Mappa di Calore
 
-> 🔄 **Mappatura UI → API Parameters (heatmap_v2):**
-> 
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **X Axis**      | `x_axis`         | Colonna asse X |
-> | **Y Axis**      | `groupby`        | Colonna asse Y |
-> | **Metric**      | `metric`         | Metrica per intensità |
-> | **Normalize**   | `normalize_across` | Tipo normalizzazione |
-> | **X Scale Interval** | `xscale_interval` | Intervallo scala X |
-> | **Y Scale Interval** | `yscale_interval` | Intervallo scala Y |
-> | **Color Scheme**| `linear_color_scheme` | Gradiente colori |
-> | **Legend**      | `legend_type`    | Tipo legenda |
-> | **Show %**      | `show_percentage`| Mostra percentuali |
-> | **Row Limit**   | `row_limit`      | Limite righe |
+**Endpoint:** `POST /api/v1/chart/`
 
 **Parametri indispensabili:**
-- `x_axis`: Colonna asse X (es. "Latitudine") (**obbligatorio**)
-- `groupby`: Colonna asse Y (es. "Longitudine") (**obbligatorio**)
-- `metric`: Metrica per intensità colore (es. "sum__importo") (**obbligatorio**)
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "heatmap_v2" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `x_axis`: Colonna asse X (es. "product_line") (**obbligatorio**)
+- `groupby`: Colonna asse Y (es. "deal_size") (**obbligatorio**)
+- `metric`: Metrica per intensità colore (es. "count") (**obbligatorio**)
 
 **Parametri opzionali (default disponibili):**
 - `normalize_across`: Normalizzazione (default: "heatmap")
@@ -319,179 +324,153 @@ Authorization: Bearer <access_token>
 - `x_axis_time_format`: Formato asse X temporale (default: "smart_date")
 - `show_legend`: Mostra legenda (default: true)
 - `show_percentage`: Mostra percentuali (default: true)
+- `show_values`: Mostra valori (default: true)
 - `row_limit`: Limite righe (default: 10000)
 
-**API d'esempio (heatmap_v2):**
+**Esempio validato (FUNZIONANTE):**
 ```json
 {
-  "slice_name": "Heatmap Latitudine vs Longitudine",
-  "viz_type": "heatmap_v2",
-  "datasource_id": 1,
+  "datasource_id": 9,
   "datasource_type": "table",
-  "params": {
-    "datasource": "1__table",
-    "viz_type": "heatmap_v2",
-    "x_axis": "Latitudine",
-    "groupby": "Longitudine",
-    "metric": "count",
-    "time_grain_sqla": "P1D",
-    "adhoc_filters": [],
-    "row_limit": 10000,
-    "sort_x_axis": "alpha_asc",
-    "sort_y_axis": "alpha_asc",
-    "normalize_across": "heatmap",
-    "legend_type": "continuous",
-    "linear_color_scheme": "superset_seq_1",
-    "xscale_interval": -1,
-    "yscale_interval": -1,
-    "left_margin": "auto",
-    "bottom_margin": "auto",
-    "value_bounds": [null, null],
-    "y_axis_format": "SMART_NUMBER",
-    "x_axis_time_format": "smart_date",
-    "show_legend": true,
-    "show_percentage": true,
-    "extra_form_data": {},
-    "dashboards": []
-  },
-  "query_context": null
+  "slice_name": "Heat Map Example",
+  "viz_type": "heatmap_v2",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"heatmap_v2\",\"x_axis\":\"product_line\",\"time_grain_sqla\":\"P1D\",\"groupby\":\"deal_size\",\"metric\":\"count\",\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"row_limit\":10000,\"sort_x_axis\":\"alpha_asc\",\"sort_y_axis\":\"alpha_asc\",\"normalize_across\":\"heatmap\",\"legend_type\":\"continuous\",\"linear_color_scheme\":\"superset_seq_1\",\"xscale_interval\":-1,\"yscale_interval\":-1,\"left_margin\":\"auto\",\"bottom_margin\":\"auto\",\"value_bounds\":[null,null],\"y_axis_format\":\"SMART_NUMBER\",\"x_axis_time_format\":\"smart_date\",\"show_legend\":true,\"show_percentage\":true,\"show_values\":true,\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
 }
 ```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "heatmap_v2"
+> - Il parametro `groupby` deve essere una stringa singola (non array)
+> - Il campo `params` deve essere una stringa JSON
+
+---
 
 ### 7. **Tree Chart** - Grafico ad Albero
 
-> 🔄 **Mappatura UI → API Parameters:**
-> 
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **Hierarchy** | `groupby` | Gerarchia categorie |
-> | **Metric** | `metric` | Metrica per dimensioni |
-> | **Treemap Ratio** | `treemap_ratio` | Rapporto geometrico |
-> | **Number Format** | `number_format` | Formato numeri |
-> | **Color Scheme** | `color_scheme` | Schema colori |
 
-**Parametri specifici**:
+**Endpoint:** `POST /api/v1/chart/`
 
 **Parametri indispensabili:**
-- `groupby`: Gerarchia delle categorie (es. ["categoria_prodotto", "sottocategoria"]) (**obbligatorio**)
-- `metric`: Metrica per dimensione nodi (es. "sum__importo") (**obbligatorio**)
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "tree_chart" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `id`: Colonna ID dei nodi (es. "id") (**obbligatorio**)
+- `parent`: Colonna ID del nodo padre (es. "parent") (**obbligatorio**)
+- `name`: Colonna nome del nodo (es. "name") (**obbligatorio**)
+- `root_node_id`: ID del nodo radice (es. "1") (**obbligatorio**)
+- `metric`: Metrica per dimensione nodi (es. "count") (**obbligatorio**)
 
 **Parametri opzionali (default disponibili):**
-- `treemap_ratio`: Rapporto geometrico (default: 1.618)
-- `number_format`: Formato numeri (default: ",.0f")
-- `color_scheme`: Schema colori (default: "bnbColors")
+- `layout`: Tipo layout (default: "radial")
+- `node_label_position`: Posizione etichetta nodo (default: "top")
+- `child_label_position`: Posizione etichetta figli (default: "top")
+- `symbol`: Simbolo nodi (default: "emptyCircle")
+- `symbolSize`: Dimensione simboli (default: 7)
+- `roam`: Navigazione interattiva (default: false)
+- `row_limit`: Limite righe (default: 1000)
 
-**API d'esempio**:
+**Esempio validato (FUNZIONANTE):**
 ```json
 {
-  "slice_name": "Tree Chart Vendite per Categoria e Sottocategoria",
-  "viz_type": "treemap",
-  "datasource_id": 15,
+  "datasource_id": 20,
   "datasource_type": "table",
-  "params": {
-    "groupby": ["categoria_prodotto", "sottocategoria"],
-    "metric": "sum__importo",
-    "treemap_ratio": 1.618,
-    "number_format": ",.0f",
-    "color_scheme": "bnbColors"
-  },
-  "query_context": {
-    "datasource": {"id": 15, "type": "table"},
-    "queries": [{
-      "columns": ["categoria_prodotto", "sottocategoria"],
-      "metrics": ["sum__importo"],
-      "row_limit": 100
-    }]
-  }
+  "slice_name": "Tree Chart Example",
+  "viz_type": "tree_chart",
+  "params": "{\"datasource\":{\"id\":20,\"type\":\"table\"},\"viz_type\":\"tree_chart\",\"id\":\"id\",\"parent\":\"parent\",\"name\":\"name\",\"root_node_id\":\"1\",\"metric\":\"count\",\"adhoc_filters\":[],\"row_limit\":1000,\"layout\":\"radial\",\"node_label_position\":\"top\",\"child_label_position\":\"top\",\"symbol\":\"emptyCircle\",\"symbolSize\":7,\"roam\":false,\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
 }
 ```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "tree_chart" (non "treemap")
+> - Richiede dataset con struttura gerarchica (id, parent, name)
+> - Il campo `params` deve essere una stringa JSON
+
+---
 
 ### 8. **Scatter Plot** - Grafico a Dispersione
 
-> 🔄 **Mappatura UI → API Parameters:**
+> 🔄 **Mappatura UI → API Parameters (echarts_timeseries_scatter):**
 > 
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **X Axis** | `x` | Metrica asse X |
-> | **Y Axis** | `y` | Metrica asse Y |
-> | **Bubble Size** | `size` | Metrica per dimensione |
-> | **Series** | `entity` | Colonna per entità |
-> | **Max Bubble Size** | `max_bubble_size` | Dimensione massima |
-> | **X Log Scale** | `x_log_scale` | Scala logaritmica X |
-> | **Y Log Scale** | `y_log_scale` | Scala logaritmica Y |
-
-**Parametri specifici**:
+**Endpoint:** `POST /api/v1/chart/`
 
 **Parametri indispensabili:**
-- `x`: Metrica asse X (es. "sum__importo") (**obbligatorio**)
-- `y`: Metrica asse Y (es. "avg__margine") (**obbligatorio**)
-- `entity`: Colonna per entità/etichette (es. "regione") (**obbligatorio**)
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "echarts_timeseries_scatter" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `x_axis`: Colonna asse X (es. "order_date") (**obbligatorio**)
+- `metrics`: Metriche per asse Y (es. ["count"]) (**obbligatorio**)
+- `groupby`: Raggrupamenti per serie (es. ["deal_size"])
 
 **Parametri opzionali (default disponibili):**
-- `size`: Metrica per dimensione punti (default: "count")
-- `max_bubble_size`: Dimensione massima bolle in % (default: "25")
-- `color_scheme`: Schema colori (default: "bnbColors")
+- `time_grain_sqla`: Granularità temporale (default: "P1D")
+- `markerSize`: Dimensione marcatori (default: 6)
+- `color_scheme`: Schema colori (default: "supersetColors")
 - `show_legend`: Mostra legenda (default: true)
-- `x_axis_label`: Etichetta asse X (default: nessuna)
-- `y_axis_label`: Etichetta asse Y (default: nessuna)
-- `x_log_scale`: Scala logaritmica asse X (default: false)
-- `y_log_scale`: Scala logaritmica asse Y (default: false)
+- `rich_tooltip`: Tooltip dettagliato (default: true)
+- `row_limit`: Limite righe (default: 10000)
 
-**API d'esempio**:
+**Esempio validato (FUNZIONANTE):**
 ```json
 {
-  "slice_name": "Scatter Plot Vendite vs Margini",
-  "viz_type": "bubble",
-  "datasource_id": 15,
+  "datasource_id": 9,
   "datasource_type": "table",
-  "params": {
-    "x": "sum__importo",
-    "y": "avg__margine",
-    "size": "count",
-    "entity": "regione",
-    "max_bubble_size": "25",
-    "color_scheme": "bnbColors",
-    "show_legend": true,
-    "x_axis_label": "Vendite Totali",
-    "y_axis_label": "Margine Medio",
-    "x_log_scale": false,
-    "y_log_scale": false
-  },
-  "query_context": {
-    "datasource": {"id": 15, "type": "table"},
-    "queries": [{
-      "columns": ["regione"],
-      "metrics": ["sum__importo", "avg__margine", "count"],
-      "row_limit": 100
-    }]
-  }
+  "slice_name": "Scatter Plot Example",
+  "viz_type": "echarts_timeseries_scatter",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"echarts_timeseries_scatter\",\"x_axis\":\"order_date\",\"time_grain_sqla\":\"P1D\",\"x_axis_sort_asc\":true,\"x_axis_sort_series\":\"name\",\"x_axis_sort_series_ascending\":true,\"metrics\":[\"count\"],\"groupby\":[\"deal_size\"],\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"order_desc\":true,\"row_limit\":10000,\"truncate_metric\":true,\"show_empty_columns\":true,\"comparison_type\":\"values\",\"annotation_layers\":[],\"forecastPeriods\":10,\"forecastInterval\":0.8,\"x_axis_title_margin\":15,\"y_axis_title_margin\":15,\"y_axis_title_position\":\"Left\",\"sort_series_type\":\"sum\",\"color_scheme\":\"supersetColors\",\"only_total\":true,\"markerSize\":6,\"show_legend\":true,\"legendType\":\"scroll\",\"legendOrientation\":\"top\",\"x_axis_time_format\":\"smart_date\",\"rich_tooltip\":true,\"tooltipTimeFormat\":\"smart_date\",\"y_axis_format\":\"SMART_NUMBER\",\"truncateXAxis\":true,\"y_axis_bounds\":[null,null],\"extra_form_data\":{},\"dashboards\":[]}"
 }
 ```
 
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "echarts_timeseries_scatter" (non "bubble")
+> - Simile al bar chart ma con marcatori scatter
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
 ### 9. **Big Number** - Numero Grande
 
-> 🔄 **Mappatura UI → API Parameters (big_number_total):**
-> 
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **Metric**      | `metric`         | Metrica principale |
-> | **Y Axis**      | `groupby`        | Raggruppamento opzionale |
-> | **Time Grain**  | `time_grain_sqla`| Granularità temporale |
-> | **Row Limit**   | `row_limit`      | Limite righe |
-> | **Y Axis Format** | `y_axis_format` | Formato numero |
-> | **Show Legend** | `show_legend`    | Mostra legenda |
-> | **Extra**       | ...              | Altri parametri |
+**Endpoint:** `POST /api/v1/chart/`
 
 **Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "big_number_total" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
 - `metric`: Metrica principale da visualizzare (es. "count") (**obbligatorio**)
 
 **Parametri opzionali (default disponibili):**
-- `groupby`: Raggruppamento opzionale (default: nessuno)
-- `time_grain_sqla`: Granularità temporale (default: "P1D")
-- `row_limit`: Limite righe (default: 10000)
+- `header_font_size`: Dimensione font titolo (default: 0.4)
+- `subheader_font_size`: Dimensione font sottotitolo (default: 0.15)
 - `y_axis_format`: Formato del numero (default: "SMART_NUMBER")
-- `show_legend`: Mostra legenda (default: true)
-- `extra_form_data`, `dashboards`: Parametri aggiuntivi
+- `time_format`: Formato tempo (default: "smart_date")
+- `adhoc_filters`: Filtri aggiuntivi (default: [])
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Big Number Example",
+  "viz_type": "big_number_total",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"big_number_total\",\"metric\":\"count\",\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"header_font_size\":0.4,\"subheader_font_size\":0.15,\"y_axis_format\":\"SMART_NUMBER\",\"time_format\":\"smart_date\",\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "big_number_total"
+> - Visualizza un singolo valore numerico grande
+> - Il campo `params` deve essere una stringa JSON
 
 **API d'esempio (big_number_total):**
 ```json
@@ -518,86 +497,6 @@ Authorization: Bearer <access_token>
 ```
 
 
-## 🔧 Schema Base della Richiesta POST /api/v1/chart/
-
-Tutti i chart condividono una struttura base comune:
-
-```json
-{
-  "slice_name": "Nome del Chart",           // Titolo visualizzato
-  "viz_type": "table",                      // Tipo di visualizzazione
-  "datasource_id": 15,                      // ID del dataset
-  "datasource_type": "table",               // Sempre "table" per dataset
-  "params": {                               // Configurazione specifica del chart
-    // Parametri specifici per ogni tipo di chart
-  },
-  "query_context": {                        // Contesto della query
-    "datasource": {
-      "id": 15,
-      "type": "table"
-    },
-    "force": false,
-    "queries": [
-      {
-        "columns": [],                      // Colonne selezionate
-        "metrics": [],                      // Metriche calcolate
-        "filters": [],                      // Filtri applicati
-        "orderby": [],                      // Ordinamento
-        "annotation_layers": [],
-        "row_limit": 1000,                  // Limite righe
-        "time_range": "No filter",          // Range temporale
-        "granularity": null                 // Granularità temporale
-      }
-    ],
-    "result_format": "json",
-    "result_type": "full"
-  }
-}
-```
-
----
----
-
-## 🔧 Parametri Comuni a Tutti i Chart
-
-### **Colori e Stile**
-```json
-{
-  "color_scheme": "bnbColors",        // Schema colori: "bnbColors", "google", "category20", "d3Category10"
-  "show_legend": true,                // Mostra legenda: true/false
-  "legend_position": "top"            // Posizione: "top", "bottom", "left", "right"
-}
-```
-
-### **Formattazione Numeri**
-```json
-{
-  "y_axis_format": ",.0f",           // Formato asse Y: ",.0f", "€,.2f", ".1%", ",.2s"
-  "number_format": "€,.2f",          // Formato generico: "€,.2f", ",.0f", ".1%"
-  "percent_format": ".1%"            // Formato percentuali: ".1%", ".2%", ".0%"
-}
-```
-
-### **Filtri e Limiti**
-```json
-{
-  "row_limit": 1000,                 // Limite righe: 100, 500, 1000, 5000
-  "adhoc_filters": [],               // Filtri ad-hoc: [{"col": "regione", "op": "==", "val": "Lombardia"}]
-  "time_range": "Last year",         // Range: "Last year", "Last 30 days", "No filter"
-  "order_desc": true                 // Ordinamento: true = discendente, false = crescente
-}
-```
-
-### **Configurazione Assi**
-```json
-{
-  "x_axis_label": "Categoria",       // Etichetta asse X: "Regione", "Categoria", "Data"
-  "y_axis_label": "Vendite",         // Etichetta asse Y: "Vendite €", "Quantità", "Percentuale"
-  "x_axis_showminmax": true,         // Mostra min/max asse X: true/false
-  "y_axis_showminmax": true,         // Mostra min/max asse Y: true/false
-  "y_axis_bounds": [null, null]      // Limiti asse Y: [0, 1000], [null, null] = auto
-}
-```
 
 ## 📊 Creazione Dashboard con Filtri tramite API
 
