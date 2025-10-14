@@ -152,8 +152,8 @@ Authorization: Bearer <access_token>
 - `params`: Stringa JSON con configurazione (**obbligatorio**)
 
 **Parametri chiave in params:**
-- `groupbyColumns`: Righe della pivot (es. ["date"])
-- `groupbyRows`: Colonne della pivot (es. [])
+- `groupbyRows`: Righe della pivot (es. ["date"])
+- `groupbyColumns`: Colonne della pivot (es. [])
 - `metrics`: Metriche (es. ["count"])
 - `metricsLayout`: "ROWS" o "COLUMNS" per disposizione metriche
 
@@ -164,7 +164,7 @@ Authorization: Bearer <access_token>
   "datasource_type": "table",
   "slice_name": "Pivot Table (Metrics on ROWS)",
   "viz_type": "pivot_table_v2",
-  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"pivot_table_v2\",\"groupbyColumns\":[\"date\"],\"groupbyRows\":[],\"metrics\":[\"count\"],\"metricsLayout\":\"ROWS\",\"adhoc_filters\":[],\"row_limit\":10000,\"aggregateFunction\":\"Sum\"}"
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"pivot_table_v2\",\"groupbyRows\":[\"date\"],\"groupbyColumns\":[],\"metrics\":[\"count\"],\"metricsLayout\":\"ROWS\",\"adhoc_filters\":[],\"row_limit\":10000,\"aggregateFunction\":\"Sum\"}"
 }
 ```
 
@@ -175,69 +175,45 @@ Authorization: Bearer <access_token>
   "datasource_type": "table",
   "slice_name": "Pivot Table (Metrics on COLUMNS)",
   "viz_type": "pivot_table_v2",
-  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"pivot_table_v2\",\"groupbyColumns\":[\"date\"],\"groupbyRows\":[],\"metrics\":[\"count\"],\"metricsLayout\":\"COLUMNS\",\"adhoc_filters\":[],\"row_limit\":10000,\"aggregateFunction\":\"Sum\"}"
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"pivot_table_v2\",\"groupbyRows\":[],\"groupbyColumns\":[\"date\"],\"metrics\":[\"count\"],\"metricsLayout\":\"COLUMNS\",\"adhoc_filters\":[],\"row_limit\":10000,\"aggregateFunction\":\"Sum\"}"
 }
 ```
 
 
 ### 3. **Bar Chart** - Grafico a Barre
 
-> 🔄 **Mappatura UI → API Parameters:**
-> 
-> | **UI Superset** | **API Parameter** | **Descrizione** |
-> |-----------------|------------------|-----------------|
-> | **Dimensions** | `groupby` | Categorie per asse X |
-> | **Metrics** | `metrics` | Valori per asse Y |
-> | **Series limit** | `series_limit` | Limite numero serie |
-> | **Row limit** | `row_limit` | Limite righe dataset |
-> | **Color Scheme** | `color_scheme` | Schema colori |
-> | **Show Legend** | `show_legend` | Mostra legenda |
-
-**Parametri specifici**:
+**Endpoint:** `POST /api/v1/chart/`
 
 **Parametri indispensabili:**
-- `groupby`: Colonne da usare per l'asse X (es. ["regione"]) (**obbligatorio**)
-- `metrics`: Metriche da visualizzare sull'asse Y (es. ["sum__importo"]) (**almeno una obbligatoria**)
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "echarts_timeseries_bar" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
 
-**Parametri opzionali (default disponibili):**
-- `x_axis_label`: Solo etichetta testuale dell'asse X (default: nessuna)
-- `y_axis_label`: Solo etichetta testuale dell'asse Y (default: nessuna)
-- `color_scheme`: Schema colori (default: "bnbColors")
-- `show_legend`: Mostra legenda (true/false, default: true)
-- `rich_tooltip`: Tooltip dettagliato con più informazioni (true/false, default: false)
-- `bottom_margin`: Margine inferiore (default: "auto")
-- `x_ticks_layout`: Layout etichette asse X (default: "auto")
+**Parametri chiave in params:**
+- `x_axis`: Colonna per asse X (es. "date")
+- `metrics`: Metriche per asse Y (es. ["count"])
+- `groupby`: Raggrupamenti opzionali (es. [])
+- `orientation`: "vertical" o "horizontal"
 
-
-**API d'esempio**:
+**Esempio validato (FUNZIONANTE):**
 ```json
 {
-  "slice_name": "Vendite per Regione - Bar Chart",
-  "viz_type": "dist_bar",
-  "datasource_id": 15,
+  "datasource_id": 17,
   "datasource_type": "table",
-  "params": {
-    "groupby": ["regione"],
-    "metrics": ["sum__importo"],
-    "color_scheme": "bnbColors",
-    "show_legend": true,
-    "rich_tooltip": true,
-    "x_axis_label": "Regione",
-    "y_axis_label": "Importo Vendite (€)",
-    "bottom_margin": "auto",
-    "x_ticks_layout": "auto"
-  },
-  "query_context": {
-    "datasource": {"id": 15, "type": "table"},
-    "queries": [{
-      "columns": ["regione"],
-      "metrics": ["sum__importo"],
-      "row_limit": 50,
-      "orderby": [["sum__importo", false]]
-    }]
-  }
+  "slice_name": "Bar Chart - Date vs Count",
+  "viz_type": "echarts_timeseries_bar",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},\"viz_type\":\"echarts_timeseries_bar\",\"x_axis\":\"date\",\"metrics\":[\"count\"],\"groupby\":[],\"adhoc_filters\":[],\"row_limit\":50,\"color_scheme\":\"bnbColors\",\"orientation\":\"vertical\",\"show_legend\":true,\"rich_tooltip\":true}"
 }
 ```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "echarts_timeseries_bar" (non "dist_bar")
+> - Il parametro principale è `x_axis` (non `groupby` per l'asse X)
+> - Il campo `params` deve essere una stringa JSON
+
+---
 
 ### 4. **Pie Chart** - Grafico a Torta
 
