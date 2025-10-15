@@ -4,7 +4,7 @@
 ## 🎯 Obiettivo
 Documentazione dettagliata dei parametri API e esempi pratici per la creazione automatica di chart e dashboard in Superset tramite chiamate REST.
 
-> 📋 **Stato Validazione**: **9 tipi di chart completamente validati e testati** con Superset v6 API
+> 📋 **Stato Validazione**: **12 tipi di chart completamente validati e testati** con Superset v6 API
 > - ✅ Table (RAW e AGGREGATE)
 > - ✅ Pivot Table (ROWS e COLUMNS) 
 > - ✅ Bar Chart (echarts_timeseries_bar) - **Versione Corretta con Dataset Specifico**
@@ -14,6 +14,9 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione a
 > - ✅ Tree Chart (tree_chart)
 > - ✅ Scatter Plot (echarts_timeseries_scatter)
 > - ✅ Big Number (big_number_total)
+> - ✅ Gauge Chart (gauge_chart) - **NUOVO**
+> - ✅ Area Chart (echarts_area) - **NUOVO**
+> - ✅ Waterfall Chart (waterfall) - **NUOVO**
 
 ---
 ## 📑 Indice
@@ -29,6 +32,9 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione a
   - [7. Tree Chart - Grafico ad Albero](#7-tree-chart---grafico-ad-albero)
   - [8. Scatter Plot - Grafico a Dispersione](#8-scatter-plot---grafico-a-dispersione)
   - [9. Big Number - Numero Grande](#9-big-number---numero-grande)
+  - [10. Gauge Chart - Grafico a Indicatore](#10-gauge-chart---grafico-a-indicatore)
+  - [11. Area Chart - Grafico ad Area](#11-area-chart---grafico-ad-area)
+  - [12. Waterfall Chart - Grafico a Cascata](#12-waterfall-chart---grafico-a-cascata)
   - [🔧 Schema Base e Parametri Comuni](#-schema-base-della-richiesta-post-apiv1chart)
 - [📊 Creazione Dashboard con Filtri](#-creazione-dashboard-con-filtri-tramite-api)
   - [📋 Panoramica e Parametri Obbligatori](#panoramica-e-parametri-obbligatori)
@@ -498,6 +504,136 @@ Authorization: Bearer <access_token>
   "query_context": null
 }
 ```
+
+---
+
+### 10. **Gauge Chart** - Grafico a Indicatore
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "gauge_chart" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `groupby`: Colonne per raggruppamento (es. ["deal_size"]) (**obbligatorio**)
+- `metric`: Metrica da visualizzare (es. "count") (**obbligatorio**)
+
+**Parametri opzionali (default disponibili):**
+- `start_angle`: Angolo di inizio (default: 225)
+- `end_angle`: Angolo di fine (default: -45)
+- `color_scheme`: Schema colori (default: "supersetColors")
+- `font_size`: Dimensione font (default: 13)
+- `number_format`: Formato numerico (default: "SMART_NUMBER")
+- `show_pointer`: Mostra puntatore (default: true)
+- `animation`: Abilita animazioni (default: true)
+- `show_progress`: Mostra progresso (default: true)
+- `row_limit`: Limite righe (default: 10)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Gauge Chart Example",
+  "viz_type": "gauge_chart",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"gauge_chart\",\"groupby\":[\"deal_size\"],\"metric\":\"count\",\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"start_angle\":225,\"end_angle\":-45,\"color_scheme\":\"supersetColors\",\"font_size\":13,\"number_format\":\"SMART_NUMBER\",\"value_formatter\":\"{value}%\",\"show_pointer\":true,\"animation\":true,\"show_axis_label\":true,\"show_progress\":true,\"overlap\":true,\"round_cap\":false,\"row_limit\":10}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "gauge_chart"
+> - Visualizza dati come indicatore circolare tipo tachimetro
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 11. **Area Chart** - Grafico ad Area
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "echarts_area" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `x_axis`: Colonna per asse X (es. "order_date") (**obbligatorio**)
+- `metrics`: Metriche da visualizzare (es. ["count"]) (**obbligatorio**)
+- `groupby`: Colonne per raggruppamento (es. ["deal_size"])
+
+**Parametri opzionali (default disponibili):**
+- `time_grain_sqla`: Granularità temporale (default: "P1W")
+- `opacity`: Trasparenza area (default: 0.2)
+- `only_total`: Solo totale (default: true)
+- `show_legend`: Mostra leggenda (default: true)
+- `color_scheme`: Schema colori (default: "supersetColors")
+- `y_axis_format`: Formato asse Y (default: "SMART_NUMBER")
+- `row_limit`: Limite righe (default: 10000)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Area Chart Example",
+  "viz_type": "echarts_area",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"echarts_area\",\"x_axis\":\"order_date\",\"time_grain_sqla\":\"P1W\",\"x_axis_sort_asc\":true,\"x_axis_sort_series\":\"name\",\"x_axis_sort_series_ascending\":true,\"metrics\":[\"count\"],\"groupby\":[\"deal_size\"],\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"order_desc\":true,\"row_limit\":10000,\"truncate_metric\":true,\"show_empty_columns\":true,\"comparison_type\":\"values\",\"annotation_layers\":[],\"forecastPeriods\":10,\"forecastInterval\":0.8,\"x_axis_title_margin\":15,\"y_axis_title_margin\":15,\"y_axis_title_position\":\"Left\",\"sort_series_type\":\"sum\",\"color_scheme\":\"supersetColors\",\"seriesType\":\"echarts_timeseries_line\",\"opacity\":0.2,\"only_total\":true,\"markerSize\":6,\"show_legend\":true,\"legendType\":\"scroll\",\"legendOrientation\":\"top\",\"x_axis_time_format\":\"smart_date\",\"rich_tooltip\":true,\"tooltipTimeFormat\":\"smart_date\",\"y_axis_format\":\"SMART_NUMBER\",\"truncateXAxis\":true,\"y_axis_bounds\":[null,null],\"extra_form_data\":{},\"dashboards\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "echarts_area"
+> - Simile al line chart ma con area riempita
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 12. **Waterfall Chart** - Grafico a Cascata
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "waterfall" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `x_axis`: Colonna per asse X (es. "order_date") (**obbligatorio**)
+- `metric`: Metrica da visualizzare (es. "count") (**obbligatorio**)
+
+**Parametri opzionali (default disponibili):**
+- `time_grain_sqla`: Granularità temporale (default: "P3M")
+- `show_value`: Mostra valori (default: true)
+- `increase_color`: Colore incrementi (default: verde)
+- `decrease_color`: Colore decrementi (default: rosso)
+- `total_color`: Colore totali (default: grigio)
+- `x_axis_time_format`: Formato asse X (default: "smart_date")
+- `y_axis_format`: Formato asse Y (default: "SMART_NUMBER")
+- `row_limit`: Limite righe (default: 10000)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Waterfall Chart Example",
+  "viz_type": "waterfall",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"waterfall\",\"x_axis\":\"order_date\",\"time_grain_sqla\":\"P3M\",\"groupby\":[],\"metric\":\"count\",\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"row_limit\":10000,\"show_value\":true,\"increase_color\":{\"r\":90,\"g\":193,\"b\":137,\"a\":1},\"decrease_color\":{\"r\":224,\"g\":67,\"b\":85,\"a\":1},\"total_color\":{\"r\":102,\"g\":102,\"b\":102,\"a\":1},\"x_axis_time_format\":\"smart_date\",\"x_ticks_layout\":\"auto\",\"y_axis_format\":\"SMART_NUMBER\",\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "waterfall"
+> - Mostra variazioni cumulative nel tempo
+> - Il campo `params` deve essere una stringa JSON
 
 
 
