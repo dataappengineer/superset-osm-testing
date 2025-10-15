@@ -1,5 +1,5 @@
 # Superset Chart Creation Test Script - VALIDATED Chart Types + UI Clones
-# Tests 11 visualization types with Superset v6 API (validated + working UI clones)
+# Tests 14 visualization types with Superset v6 API (validated + working UI clones)
 # All configurations match API_Chart_Creation_Reference.md documentation
 
 # Configuration
@@ -92,6 +92,24 @@ $charts = @(
         type = "big_number_total"
         datasource_id = 9
         params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"big_number_total`",`"metric`":`"count`",`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"header_font_size`":0.4,`"subheader_font_size`":0.15,`"y_axis_format`":`"SMART_NUMBER`",`"time_format`":`"smart_date`",`"extra_form_data`":{},`"dashboards`":[],`"annotation_layers`":[]}"
+    },
+    @{
+        name = "12. Gauge Chart"
+        type = "gauge_chart"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"gauge_chart`",`"groupby`":[`"deal_size`"],`"metric`":`"count`",`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"start_angle`":225,`"end_angle`":-45,`"color_scheme`":`"supersetColors`",`"font_size`":13,`"number_format`":`"SMART_NUMBER`",`"value_formatter`":`"{value}%`",`"show_pointer`":true,`"animation`":true,`"show_axis_label`":true,`"show_progress`":true,`"overlap`":true,`"round_cap`":false,`"row_limit`":10}"
+    },
+    @{
+        name = "13. Area Chart"
+        type = "echarts_area"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"echarts_area`",`"x_axis`":`"order_date`",`"time_grain_sqla`":`"P1W`",`"x_axis_sort_asc`":true,`"x_axis_sort_series`":`"name`",`"x_axis_sort_series_ascending`":true,`"metrics`":[`"count`"],`"groupby`":[`"deal_size`"],`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"order_desc`":true,`"row_limit`":10000,`"truncate_metric`":true,`"show_empty_columns`":true,`"comparison_type`":`"values`",`"annotation_layers`":[],`"forecastPeriods`":10,`"forecastInterval`":0.8,`"x_axis_title_margin`":15,`"y_axis_title_margin`":15,`"y_axis_title_position`":`"Left`",`"sort_series_type`":`"sum`",`"color_scheme`":`"supersetColors`",`"seriesType`":`"echarts_timeseries_line`",`"opacity`":0.2,`"only_total`":true,`"markerSize`":6,`"show_legend`":true,`"legendType`":`"scroll`",`"legendOrientation`":`"top`",`"x_axis_time_format`":`"smart_date`",`"rich_tooltip`":true,`"tooltipTimeFormat`":`"smart_date`",`"y_axis_format`":`"SMART_NUMBER`",`"truncateXAxis`":true,`"y_axis_bounds`":[null,null],`"extra_form_data`":{},`"dashboards`":[]}"
+    },
+    @{
+        name = "14. Waterfall Chart"
+        type = "waterfall"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"waterfall`",`"x_axis`":`"order_date`",`"time_grain_sqla`":`"P3M`",`"groupby`":[],`"metric`":`"count`",`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"row_limit`":10000,`"show_value`":true,`"increase_color`":{`"r`":90,`"g`":193,`"b`":137,`"a`":1},`"decrease_color`":{`"r`":224,`"g`":67,`"b`":85,`"a`":1},`"total_color`":{`"r`":102,`"g`":102,`"b`":102,`"a`":1},`"x_axis_time_format`":`"smart_date`",`"x_ticks_layout`":`"auto`",`"y_axis_format`":`"SMART_NUMBER`",`"extra_form_data`":{},`"dashboards`":[],`"annotation_layers`":[]}"
     }
 )
 
