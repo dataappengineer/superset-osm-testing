@@ -1,5 +1,5 @@
 # Superset Chart Creation Test Script - VALIDATED Chart Types + UI Clones
-# Tests 14 visualization types with Superset v6 API (validated + working UI clones)
+# Tests 20 visualization types with Superset v6 API (validated + working UI clones)
 # All configurations match API_Chart_Creation_Reference.md documentation
 
 # Configuration
@@ -110,6 +110,42 @@ $charts = @(
         type = "waterfall"
         datasource_id = 9
         params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"waterfall`",`"x_axis`":`"order_date`",`"time_grain_sqla`":`"P3M`",`"groupby`":[],`"metric`":`"count`",`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"row_limit`":10000,`"show_value`":true,`"increase_color`":{`"r`":90,`"g`":193,`"b`":137,`"a`":1},`"decrease_color`":{`"r`":224,`"g`":67,`"b`":85,`"a`":1},`"total_color`":{`"r`":102,`"g`":102,`"b`":102,`"a`":1},`"x_axis_time_format`":`"smart_date`",`"x_ticks_layout`":`"auto`",`"y_axis_format`":`"SMART_NUMBER`",`"extra_form_data`":{},`"dashboards`":[],`"annotation_layers`":[]}"
+    },
+    @{
+        name = "15. Histogram"
+        type = "histogram_v2"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"histogram_v2`",`"column`":`"quantity_ordered`",`"groupby`":[`"deal_size`"],`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"row_limit`":10000,`"bins`":10,`"normalize`":false,`"color_scheme`":`"supersetColors`",`"show_value`":false,`"show_legend`":true,`"extra_form_data`":{},`"dashboards`":[],`"annotation_layers`":[]}"
+    },
+    @{
+        name = "16. Funnel Chart"
+        type = "funnel"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"funnel`",`"groupby`":[`"deal_size`"],`"metric`":`"count`",`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"row_limit`":10,`"sort_by_metric`":true,`"percent_calculation_type`":`"first_step`",`"color_scheme`":`"supersetColors`",`"show_legend`":true,`"legendOrientation`":`"top`",`"legendMargin`":50,`"tooltip_label_type`":5,`"number_format`":`"SMART_NUMBER`",`"show_labels`":true,`"show_tooltip_labels`":true,`"extra_form_data`":{},`"dashboards`":[],`"annotation_layers`":[]}"
+    },
+    @{
+        name = "17. Bullet Chart"
+        type = "bullet"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"bullet`",`"metric`":`"count`",`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"ranges`":`"3000`",`"range_labels`":`"Target Range`",`"markers`":`"2000`",`"marker_labels`":`"Current Value`",`"marker_lines`":`"`",`"marker_line_labels`":`"`",`"extra_form_data`":{},`"dashboards`":[]}"
+    },
+    @{
+        name = "18. Mixed Chart"
+        type = "mixed_timeseries"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"mixed_timeseries`",`"x_axis`":`"order_date`",`"time_grain_sqla`":`"P1M`",`"metrics`":[`"count`"],`"groupby`":[],`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"order_desc`":true,`"row_limit`":10000,`"truncate_metric`":true,`"comparison_type`":`"values`",`"metrics_b`":[`"count`"],`"groupby_b`":[],`"adhoc_filters_b`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"order_desc_b`":true,`"row_limit_b`":10000,`"truncate_metric_b`":true,`"comparison_type_b`":`"values`",`"annotation_layers`":[],`"x_axis_title_margin`":15,`"y_axis_title_margin`":15,`"y_axis_title_position`":`"Left`",`"color_scheme`":`"supersetColors`",`"seriesType`":`"bar`",`"opacity`":0.2,`"markerSize`":6,`"yAxisIndex`":1,`"sort_series_type`":`"sum`",`"seriesTypeB`":null,`"opacityB`":0.2,`"markerSizeB`":6,`"yAxisIndexB`":0,`"sort_series_typeB`":`"sum`",`"show_legend`":true,`"legendType`":`"scroll`",`"legendOrientation`":`"top`",`"x_axis_time_format`":`"smart_date`",`"rich_tooltip`":true,`"tooltipTimeFormat`":`"smart_date`",`"truncateXAxis`":true,`"y_axis_bounds`":[null,null],`"y_axis_format`":`"SMART_NUMBER`",`"y_axis_bounds_secondary`":[null,null],`"y_axis_format_secondary`":`"SMART_NUMBER`",`"extra_form_data`":{},`"dashboards`":[]}"
+    },
+    @{
+        name = "19. Country Map"
+        type = "country_map"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"country_map`",`"entity`":`"deal_size`",`"metric`":`"count`",`"select_country`":`"usa`",`"row_limit`":50000,`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"extra_form_data`":{},`"dashboards`":[],`"annotation_layers`":[]}"
+    },
+    @{
+        name = "20. Deck.gl Scatterplot"
+        type = "deck_scatter"
+        datasource_id = 9
+        params = "{`"datasource`":{`"id`":9,`"type`":`"table`"},`"viz_type`":`"deck_scatter`",`"spatial`":{`"latCol`":`"latitude`",`"lonCol`":`"longitude`",`"type`":`"latlong`"},`"size`":`"count`",`"point_radius_fixed`":{`"type`":`"metric`",`"value`":`"count`"},`"color_picker`":{`"r`":205,`"g`":0,`"b`":3,`"a`":0.82},`"mapbox_style`":`"https://tile.openstreetmap.org/{z}/{x}/{y}.png`",`"viewport`":{`"latitude`":37.7893,`"longitude`":-122.4261,`"zoom`":12.7,`"bearing`":0,`"pitch`":0},`"point_unit`":`"square_m`",`"min_radius`":1,`"max_radius`":250,`"multiplier`":10,`"row_limit`":5000,`"adhoc_filters`":[{`"clause`":`"WHERE`",`"subject`":`"order_date`",`"operator`":`"TEMPORAL_RANGE`",`"comparator`":`"No filter`",`"expressionType`":`"SIMPLE`"}],`"extra_form_data`":{},`"dashboards`":[],`"annotation_layers`":[]}"
     }
 )
 
