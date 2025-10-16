@@ -5,9 +5,11 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione e
 
 > 📋 **Stato Validazione**: **Dataset API completamente validata e testata** con Superset v6
 > - ✅ GET Dataset Details (lettura completa struttura dataset)
-> - ✅ POST Dataset Creation (creazione nuovo dataset da tabelle database)  
+> - ✅ POST Dataset Creation - Physical Tables (creazione dataset da tabelle esistenti)
+> - ✅ POST Dataset Creation - Virtual Datasets (creazione dataset con SQL personalizzato) 
 > - ✅ Dataset Structure Analysis (analisi colonne, metriche, e configurazioni)
 > - ✅ Database Connection Management (gestione connessioni database)
+> - ✅ Complete Chart Integration (integrazione completa con API chart)
 
 ---
 
@@ -17,8 +19,11 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione e
 - [🔍 Ottenere l'ID del Dataset Creato](#-ottenere-lid-del-dataset-creato)
 - [📋 Lettura Dataset Esistente](#-lettura-dataset-esistente)
 - [🗄️ Creazione Dataset](#️-creazione-dataset)
+  - [Dataset Fisici (Tabelle Database)](#dataset-fisici-tabelle-database)
+  - [Dataset Virtuali (SQL Personalizzato)](#dataset-virtuali-sql-personalizzato)
 - [🏗️ Struttura Dataset Response](#️-struttura-dataset-response)
 - [🔧 Gestione Database Connections](#-gestione-database-connections)
+- [🔄 Integrazione con Chart API](#-integrazione-con-chart-api)
 
 ---
 
@@ -55,22 +60,48 @@ Dopo ogni chiamata `POST /api/v1/dataset/` con successo, la risposta contiene l'
 **Struttura risposta di successo:**
 ```json
 {
-  "id": 24,
+  "id": 26,
   "result": {
-    "id": 24,
-    "table_name": "users_channels",
+    "id": 26,
+    "table_name": "virtual_dataset_173513",
     "database": {
       "id": 1,
       "database_name": "examples",
       "backend": "sqlite"
     },
-    "schema": "main",
-    "sql": null,
+    "schema": null,
+    "sql": "SELECT 'test' as test_column, 1 as test_number, date('now') as test_date",
     "datasource_type": "table",
-    "columns": [...],
-    "metrics": [...],
-    "created_on": "2025-10-09T23:29:11.829002",
-    "changed_on": "2025-10-15T16:25:58.582674"
+    "kind": "virtual",
+    "is_sqllab_view": false,
+    "columns": [
+      {
+        "column_name": "test_column",
+        "type": "STRING",
+        "groupby": true,
+        "filterable": true
+      },
+      {
+        "column_name": "test_number", 
+        "type": "INT",
+        "groupby": true,
+        "filterable": true
+      },
+      {
+        "column_name": "test_date",
+        "type": "STRING", 
+        "groupby": true,
+        "filterable": true
+      }
+    ],
+    "metrics": [
+      {
+        "metric_name": "count",
+        "expression": "COUNT(*)"
+      }
+    ],
+    "created_on": "2025-10-16T17:35:11.829002",
+    "changed_on": "2025-10-16T17:35:14.582674"
   }
 }
 ```
@@ -89,7 +120,19 @@ Dopo ogni chiamata `POST /api/v1/dataset/` con successo, la risposta contiene l'
 $response = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/" -Method POST -Headers $headers -Body $jsonBody -ContentType "application/json"
 $datasetId = $response.id
 Write-Host "Dataset creato con ID: $datasetId"
+
+# Verifica immediata del dataset creato
+$datasetDetails = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/$datasetId" -Headers $headers
+Write-Host "Columns disponibili: $($datasetDetails.result.columns.Count)"
+
 # Ora puoi usare $datasetId come datasource_id per creare chart
+$chartData = @{
+    datasource_id = $datasetId
+    datasource_type = "table"
+    slice_name = "Mio Chart"
+    viz_type = "table"
+    params = "{`"datasource`":{`"id`":$datasetId,`"type`":`"table`"},`"viz_type`":`"table`",`"all_columns`":[`"colonna1`"],`"row_limit`":100}"
+} | ConvertTo-Json
 ```
 
 ---
@@ -161,18 +204,18 @@ La risposta contiene tutti i dettagli necessari per utilizzare il dataset:
 
 ## 🗄️ Creazione Dataset
 
-### Metodo di Creazione Dataset
+### Dataset Fisici (Tabelle Database)
 
 **Endpoint:**  
 `POST /api/v1/dataset/`
 
 **Parametri indispensabili:**
 - `database`: ID numerico del database connection (**obbligatorio**)
-- `table_name`: Nome della tabella nel database (**obbligatorio**)
+- `table_name`: Nome della tabella esistente nel database (**obbligatorio**)
 - `schema`: Nome dello schema (può essere null per SQLite) (**opzionale**)
 - `owners`: Array con ID degli owner (es. [1]) (**opzionale**)
 
-**Esempio creazione base:**
+**Esempio creazione dataset fisico:**
 ```json
 {
   "database": 1,
@@ -181,6 +224,57 @@ La risposta contiene tutti i dettagli necessari per utilizzare il dataset:
   "owners": [1]
 }
 ```
+
+**⚠️ Limitazioni Dataset Fisici:**
+- La tabella deve esistere fisicamente nel database
+- Non è possibile creare dataset per tabelle già associate (errore 422)
+- Verificare sempre l'esistenza della tabella prima della creazione
+
+---
+
+### Dataset Virtuali (SQL Personalizzato)
+
+**Endpoint:**  
+`POST /api/v1/dataset/`
+
+**Parametri indispensabili per dataset virtuali:**
+- `database`: ID numerico del database connection (**obbligatorio**)
+- `sql`: Query SQL personalizzata (**obbligatorio per dataset virtuali**)
+- `table_name`: Nome univoco del dataset virtuale (**obbligatorio**)
+- `schema`: Nome dello schema (può essere null) (**opzionale**)
+- `owners`: Array con ID degli owner (es. [1]) (**opzionale**)
+
+**Esempio creazione dataset virtuale FUNZIONANTE:**
+```json
+{
+  "database": 1,
+  "schema": null,
+  "sql": "SELECT 'test' as test_column, 1 as test_number, date('now') as test_date",
+  "table_name": "virtual_dataset_173513",
+  "owners": [1]
+}
+```
+
+**✅ Vantaggi Dataset Virtuali:**
+- Sempre funzionanti (non dipendono da tabelle esistenti)
+- Query SQL personalizzata per dati calcolati
+- Ideali per test e prove di concetto
+- Supportano qualsiasi logica SQL valida
+
+**Esempio SQL avanzato:**
+```sql
+SELECT 
+  'Categoria A' as categoria,
+  RANDOM() * 100 as valore,
+  date('now', '-' || (RANDOM() * 365) || ' days') as data_random
+UNION ALL
+SELECT 
+  'Categoria B' as categoria,
+  RANDOM() * 200 as valore,
+  date('now', '-' || (RANDOM() * 365) || ' days') as data_random
+```
+
+---
 
 ### Workflow Creazione Dataset
 
@@ -191,11 +285,26 @@ $databases = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/database/" -Headers $he
 $databaseId = $databases.result[0].id
 ```
 
-**Step 2: Creare Dataset**
+**Step 2: Creare Dataset (Approccio Consigliato - Virtual Dataset)**
+```powershell
+# Approccio SEMPRE FUNZIONANTE con dataset virtuali
+$timestamp = Get-Date -Format 'HHmmss'
+$datasetData = @{
+    database = $databaseId
+    schema = $null
+    sql = "SELECT 'test' as test_column, 1 as test_number, date('now') as test_date"
+    table_name = "my_virtual_dataset_$timestamp"
+    owners = @(1)
+} | ConvertTo-Json
+
+$datasetResponse = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/" -Method POST -Headers $headers -Body $datasetData -ContentType "application/json"
+```
+
+**Step 2 Alternativo: Creare Dataset da Tabella Fisica (se tabella esiste e non ha già dataset)**
 ```powershell
 $datasetData = @{
     database = $databaseId
-    table_name = "nome_tabella"
+    table_name = "nome_tabella_esistente"  # DEVE esistere nel database
     schema = $null
     owners = @(1)
 } | ConvertTo-Json
@@ -203,10 +312,25 @@ $datasetData = @{
 $datasetResponse = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/" -Method POST -Headers $headers -Body $datasetData -ContentType "application/json"
 ```
 
-**Step 3: Ottenere Dataset ID per Chart**
+**Step 3: Ottenere Dataset ID e Testare con Chart**
 ```powershell
 $datasetId = $datasetResponse.id
-# Usa questo ID come datasource_id nei chart
+Write-Host "Dataset creato con ID: $datasetId"
+
+# Verifica il dataset creato
+$datasetDetails = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/$datasetId" -Headers $headers
+
+# Test immediato con creazione chart
+$chartData = @{
+    datasource_id = $datasetId
+    datasource_type = "table"
+    slice_name = "Test Chart - Dataset $datasetId"
+    viz_type = "table" 
+    params = "{`"datasource`":{`"id`":$datasetId,`"type`":`"table`"},`"viz_type`":`"table`",`"all_columns`":[`"test_column`",`"test_number`"],`"row_limit`":10}"
+} | ConvertTo-Json
+
+$chartResponse = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/chart/" -Method POST -Headers $headers -Body $chartData
+Write-Host "Chart creato con ID: $($chartResponse.id)"
 ```
 
 ---
@@ -308,22 +432,25 @@ foreach ($db in $databases.result) {
 ## ⚠️ Note Tecniche Importanti
 
 ### Limitazioni API
-- **Tabelle Esistenti**: Il dataset deve riferirsi a una tabella che esiste nel database
+- **Dataset Fisici**: Tabelle devono esistere fisicamente nel database
+- **Duplicati**: Errore 422 se il dataset per la tabella esiste già
 - **Permessi**: L'utente deve avere permessi sul database connection
-- **Duplicati**: Creare dataset per la stessa tabella può causare errori
+- **Dataset Virtuali**: Sempre funzionanti se la SQL è valida
 
 ### Best Practices
-1. **Verificare Database Connection**: Assicurarsi che il database sia attivo
-2. **Controllare Tabelle**: Verificare che la tabella esista prima di creare dataset
-3. **Gestire Errori**: Le API restituiscono 422 per dati non validi
-4. **ID Dataset**: Salvare l'ID del dataset per usarlo nei chart
+1. **Usare Dataset Virtuali per Test**: Sempre funzionanti e indipendenti
+2. **Nomi Univoci**: Aggiungere timestamp per evitare conflitti
+3. **Verificare Database Connection**: Assicurarsi che il database sia attivo
+4. **Test Immediato**: Creare subito un chart per verificare il dataset
+5. **Gestire Errori 422**: Indicano dataset duplicati o SQL non valida
 
-### Workflow Consigliato
+### Workflow Consigliato (VALIDATO)
 1. Autenticarsi con `POST /api/v1/security/login`
 2. Ottenere database disponibili con `GET /api/v1/database/`
-3. Creare dataset con `POST /api/v1/dataset/`
+3. **Creare dataset virtuale** con `POST /api/v1/dataset/` (approccio consigliato)
 4. Usare dataset ID come `datasource_id` nei chart
-5. Verificare dataset con `GET /api/v1/dataset/{id}`
+5. Testare immediatamente con creazione chart
+6. Verificare dataset con `GET /api/v1/dataset/{id}`
 
 ---
 
@@ -332,23 +459,35 @@ foreach ($db in $databases.result) {
 ### Get-Dataset-Details.ps1
 Script per analizzare struttura dataset esistente:
 ```powershell
-.\Get-Dataset-Details.ps1 -DatasetId 24
+.\Get-Dataset-Details.ps1 -DatasetId 26
+```
+
+### Test-Virtual-Dataset-Creation.ps1  
+Script per creare nuovo dataset virtuale (SEMPRE FUNZIONANTE):
+```powershell
+.\Test-Virtual-Dataset-Creation.ps1
+```
+
+**Output esempio di successo:**
+```
+SUCCESS: Virtual Dataset created!
+Dataset ID: 26
+Dataset Name: virtual_dataset_173513
+Database: examples (ID: 1)
+Virtual Dataset Details:
+  - Dataset ID: 26
+  - Kind: virtual
+  - SQL: SELECT 'test' as test_column, 1 as test_number, date('now') as test_date
+  - Columns Count: 3
+  - Metrics Count: 1
+SUCCESS: Chart created with ID 1173 using virtual dataset!
+=== COMPLETE WORKFLOW SUCCESSFUL ===
 ```
 
 ### Test-Dataset-Creation.ps1  
-Script per creare nuovo dataset:
+Script per creare dataset da tabelle fisiche (può fallire se tabella ha già dataset):
 ```powershell
 .\Test-Dataset-Creation.ps1
-```
-
-**Output esempio:**
-```
-SUCCESS: Dataset created!
-Dataset ID: 25
-Dataset Name: users_channels
-Database: examples (ID: 1)
-Columns Count: 2
-Available metrics: count: count(*)
 ```
 
 ---
