@@ -213,7 +213,7 @@ Authorization: Bearer <access_token>
 - `x_axis`: Colonna per asse X (es. "order_date")
 - `metrics`: Metriche per asse Y (es. ["count"])
 - `groupby`: Raggrupamenti per serie (es. ["deal_size"])
-- `time_grain_sqla`: Granularità temporale (es. "P1M")
+- `time_grain_sqla`: Granularità temporale - **Esempio**: "P1M" = per mese, "P1D" = per giorno, "P1Y" = per anno
 - `orientation`: "vertical" o "horizontal"
 
 **Esempio validato (FUNZIONANTE):**
