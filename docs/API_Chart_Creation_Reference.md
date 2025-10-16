@@ -28,7 +28,8 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione a
 ## 📑 Indice
 
 - [🔑 Autenticazione (comune a tutte le chiamate)](#-autenticazione-comune-a-tutte-le-chiamate)
-- [📋 Creazione Chart](#-creazione-chart)
+- [� Ottenere l'ID del Chart Creato](#-ottenere-lid-del-chart-creato)
+- [�📋 Creazione Chart](#-creazione-chart)
   - [1. Table - Tabella Base](#1-table---tabella-base)
   - [2. Pivot Table - Tabella Pivot](#2-pivot-table---tabella-pivot)
   - [3. Bar Chart - Grafico a Barre](#3-bar-chart---grafico-a-barre)
@@ -91,7 +92,72 @@ Authorization: Bearer <access_token>
 
 ---
 
+## 🔍 Ottenere l'ID del Chart Creato
+
+Dopo ogni chiamata `POST /api/v1/chart/` con successo, la risposta contiene l'**ID del chart appena creato**:
+
+**Struttura risposta di successo:**
+```json
+{
+  "id": 123,
+  "result": {
+    "cache_timeout": null,
+    "certification_details": null,
+    "certified_by": null,
+    "changed_by": {
+      "first_name": "Admin",
+      "id": 1,
+      "last_name": "User"
+    },
+    "changed_by_name": "Admin User",
+    "changed_on": "2024-01-15T10:30:00.000000",
+    "changed_on_delta_humanized": "few seconds ago",
+    "datasource_id": 9,
+    "datasource_name_text": "orders",
+    "datasource_type": "table",
+    "datasource_url": "/datasource/table/9/",
+    "description": null,
+    "description_markeddown": "",
+    "edit_url": "/chart/edit/123",
+    "form_data": {...},
+    "id": 123,
+    "is_managed_externally": false,
+    "last_saved_at": "2024-01-15T10:30:00.000000",
+    "last_saved_by": {
+      "first_name": "Admin",
+      "id": 1,
+      "last_name": "User"
+    },
+    "modified": "few seconds ago",
+    "owners": [1],
+    "params": "{...}",
+    "query_context": {...},
+    "slice_name": "My Chart Name",
+    "slice_url": "/superset/explore/?form_data={...}",
+    "thumbnail_url": "/api/v1/chart/123/thumbnail/",
+    "url": "/chart/edit/123",
+    "viz_type": "table"
+  }
+}
+```
+
+**Come estrarre l'ID:**
+- L'**ID principale** si trova nel campo `id` a livello root della risposta
+- È anche disponibile in `result.id` (stesso valore)
+- Questo ID può essere utilizzato per operazioni successive come:
+  - Modifica chart: `PUT /api/v1/chart/{id}`
+  - Cancellazione: `DELETE /api/v1/chart/{id}`
+  - Ottenere dettagli: `GET /api/v1/chart/{id}`
+
+**Esempio di estrazione ID (PowerShell):**
+```powershell
+$response = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/chart/" -Method POST -Headers $headers -Body $jsonBody -ContentType "application/json"
+$chartId = $response.id
+Write-Host "Chart creato con ID: $chartId"
+```
+
 ---
+
 ## 📋 Creazione Chart
 
 ### 1. **Table** - Tabella Base
@@ -108,6 +174,11 @@ Authorization: Bearer <access_token>
 - `slice_name`: Nome del chart (**obbligatorio**)
 - `viz_type`: "table" (**obbligatorio**)
 - `params`: Stringa JSON con configurazione chart (**obbligatorio**)
+
+**Parametri chiave in params (modalità RAW):**
+- `all_columns`: Array con nomi delle colonne da visualizzare (es. ["colonna1","colonna2"]) (**obbligatorio**)
+- `adhoc_filters`: Filtri sui dati (default: [])
+- `row_limit`: Limite righe da visualizzare (default: 100)
 
 **API d'esempio (v6) - versione validata e funzionante**:
 ```json
@@ -156,6 +227,14 @@ Authorization: Bearer <access_token>
 - `query_mode`: "aggregate" (**obbligatorio**)
 - `groupby`: Colonne per raggruppamento (es. ["date"]) (**obbligatorio**)
 - `metrics`: Metriche aggregate (es. ["count"]) (**obbligatorio**)
+
+**Parametri chiave in params (modalità AGGREGATE):**
+- `query_mode`: "aggregate" per attivare modalità aggregata (**obbligatorio**)
+- `groupby`: Array con colonne di raggruppamento (es. ["date"]) (**obbligatorio**)
+- `metrics`: Array con metriche da calcolare (es. ["count"]) (**obbligatorio**)
+- `order_desc`: Ordinamento discendente (default: true)
+- `adhoc_filters`: Filtri sui dati (default: [])
+- `row_limit`: Limite righe aggregate (default: 100)
 
 **Esempio validato AGGREGATE (FUNZIONANTE):**
 ```json
