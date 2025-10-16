@@ -23,6 +23,11 @@ Documentazione completa sui diversi tipi di datasource disponibili in Superset v
 
 Il parametro `datasource_type` in Superset definisce il tipo di sorgente dati su cui si basa il chart. Ogni tipo ha caratteristiche specifiche, strutture dati diverse e casi d'uso ottimali.
 
+> ⚠️ **IMPORTANTE - Confusione Terminologica**: 
+> Nell'interfaccia UI di Superset, tutto viene chiamato "Dataset", ma nell'API ci sono tipi specifici:
+> - **Physical Dataset** (UI) = `"table"` (API)
+> - **Virtual Dataset** (UI) = `"dataset"` (API)
+
 **Sintassi generale:**
 ```json
 {
@@ -33,6 +38,15 @@ Il parametro `datasource_type` in Superset definisce il tipo di sorgente dati su
   "params": "CONFIGURAZIONE_JSON"
 }
 ```
+
+## 🔄 **Mappatura UI → API**
+
+| Cosa vedi nell'UI Superset | datasource_type da usare nell'API | Esempio |
+|----------------------------|-------------------------------------|---------|
+| **Physical Dataset** | `"table"` | `users_channels`, `covid_vaccines` |
+| **Virtual Dataset** | `"dataset"` | `hierarchical_dataset`, `project_management` |
+| **SQL Lab Query** (salvata) | `"query"` | Query personalizzate salvate |
+| **Druid Datasource** | `"druid"` | Sorgenti Apache Druid |
 
 ---
 
