@@ -4,7 +4,7 @@
 ## 🎯 Obiettivo
 Documentazione dettagliata dei parametri API e esempi pratici per la creazione automatica di chart e dashboard in Superset tramite chiamate REST.
 
-> 📋 **Stato Validazione**: **12 tipi di chart completamente validati e testati** con Superset v6 API
+> 📋 **Stato Validazione**: **20 tipi di chart completamente validati e testati** con Superset v6 API
 > - ✅ Table (RAW e AGGREGATE)
 > - ✅ Pivot Table (ROWS e COLUMNS) 
 > - ✅ Bar Chart (echarts_timeseries_bar) - **Versione Corretta con Dataset Specifico**
@@ -17,6 +17,12 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione a
 > - ✅ Gauge Chart (gauge_chart) - **NUOVO**
 > - ✅ Area Chart (echarts_area) - **NUOVO**
 > - ✅ Waterfall Chart (waterfall) - **NUOVO**
+> - ✅ Histogram (histogram_v2) - **NUOVO**
+> - ✅ Funnel Chart (funnel) - **NUOVO**
+> - ✅ Bullet Chart (bullet) - **NUOVO**
+> - ✅ Mixed Chart (mixed_timeseries) - **NUOVO**
+> - ✅ Country Map (country_map) - **NUOVO**
+> - ✅ Deck.gl Scatterplot (deck_scatter) - **NUOVO**
 
 ---
 ## 📑 Indice
@@ -35,6 +41,12 @@ Documentazione dettagliata dei parametri API e esempi pratici per la creazione a
   - [10. Gauge Chart - Grafico a Indicatore](#10-gauge-chart---grafico-a-indicatore)
   - [11. Area Chart - Grafico ad Area](#11-area-chart---grafico-ad-area)
   - [12. Waterfall Chart - Grafico a Cascata](#12-waterfall-chart---grafico-a-cascata)
+  - [13. Histogram - Istogramma](#13-histogram---istogramma)
+  - [14. Funnel Chart - Grafico a Imbuto](#14-funnel-chart---grafico-a-imbuto)
+  - [15. Bullet Chart - Grafico a Proiettile](#15-bullet-chart---grafico-a-proiettile)
+  - [16. Mixed Chart - Grafico Combinato](#16-mixed-chart---grafico-combinato)
+  - [17. Country Map - Mappa Paesi](#17-country-map---mappa-paesi)
+  - [18. Deck.gl Scatterplot - Mappa Scatter](#18-deckgl-scatterplot---mappa-scatter)
   - [🔧 Schema Base e Parametri Comuni](#-schema-base-della-richiesta-post-apiv1chart)
 - [📊 Creazione Dashboard con Filtri](#-creazione-dashboard-con-filtri-tramite-api)
   - [📋 Panoramica e Parametri Obbligatori](#panoramica-e-parametri-obbligatori)
@@ -634,6 +646,261 @@ Authorization: Bearer <access_token>
 > ⚠️ **IMPORTANTE per v6:**
 > - Usare `viz_type`: "waterfall"
 > - Mostra variazioni cumulative nel tempo
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 13. **Histogram** - Istogramma
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "histogram_v2" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `column`: Colonna per distribuzione valori (es. "quantity_ordered") (**obbligatorio**)
+- `groupby`: Colonne per raggruppamento (es. ["deal_size"])
+- `bins`: Numero di intervalli (default: 10)
+
+**Parametri opzionali (default disponibili):**
+- `normalize`: Normalizza i valori (default: false)
+- `color_scheme`: Schema colori (default: "supersetColors")
+- `show_value`: Mostra valori sui bin (default: false)
+- `show_legend`: Mostra legenda (default: true)
+- `row_limit`: Limite righe (default: 10000)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Histogram Example",
+  "viz_type": "histogram_v2",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"histogram_v2\",\"column\":\"quantity_ordered\",\"groupby\":[\"deal_size\"],\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"row_limit\":10000,\"bins\":10,\"normalize\":false,\"color_scheme\":\"supersetColors\",\"show_value\":false,\"show_legend\":true,\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "histogram_v2"
+> - Visualizza la distribuzione di frequenza dei valori
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 14. **Funnel Chart** - Grafico a Imbuto
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "funnel" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `groupby`: Colonne per categorie funnel (es. ["deal_size"]) (**obbligatorio**)
+- `metric`: Metrica da visualizzare (es. "count") (**obbligatorio**)
+- `sort_by_metric`: Ordina per metrica (default: true)
+
+**Parametri opzionali (default disponibili):**
+- `percent_calculation_type`: Tipo calcolo percentuale (default: "first_step")
+- `color_scheme`: Schema colori (default: "supersetColors")
+- `show_legend`: Mostra legenda (default: true)
+- `legendOrientation`: Orientamento legenda (default: "top")
+- `legendMargin`: Margine legenda (default: 50)
+- `number_format`: Formato numeri (default: "SMART_NUMBER")
+- `show_labels`: Mostra etichette (default: true)
+- `show_tooltip_labels`: Mostra tooltip (default: true)
+- `row_limit`: Limite righe (default: 10)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Funnel Chart Example",
+  "viz_type": "funnel",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"funnel\",\"groupby\":[\"deal_size\"],\"metric\":\"count\",\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"row_limit\":10,\"sort_by_metric\":true,\"percent_calculation_type\":\"first_step\",\"color_scheme\":\"supersetColors\",\"show_legend\":true,\"legendOrientation\":\"top\",\"legendMargin\":50,\"tooltip_label_type\":5,\"number_format\":\"SMART_NUMBER\",\"show_labels\":true,\"show_tooltip_labels\":true,\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "funnel"
+> - Visualizza un processo di conversione attraverso fasi successive
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 15. **Bullet Chart** - Grafico a Proiettile
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "bullet" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `metric`: Metrica principale da visualizzare (es. "count") (**obbligatorio**)
+- `ranges`: Valori target/obiettivo (es. "3000") (**obbligatorio**)
+- `markers`: Valori correnti/attuali (es. "2000") (**obbligatorio**)
+
+**Parametri opzionali (default disponibili):**
+- `range_labels`: Etichette per i range (default: "Target Range")
+- `marker_labels`: Etichette per i marker (default: "Current Value")
+- `marker_lines`: Linee di riferimento aggiuntive (default: "")
+- `marker_line_labels`: Etichette linee di riferimento (default: "")
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Bullet Chart Example",
+  "viz_type": "bullet",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"bullet\",\"metric\":\"count\",\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"ranges\":\"3000\",\"range_labels\":\"Target Range\",\"markers\":\"2000\",\"marker_labels\":\"Current Value\",\"marker_lines\":\"\",\"marker_line_labels\":\"\",\"extra_form_data\":{},\"dashboards\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "bullet"
+> - Confronta valori attuali con obiettivi/target
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 16. **Mixed Chart** - Grafico Combinato
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "mixed_timeseries" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `x_axis`: Colonna per asse X (es. "order_date") (**obbligatorio**)
+- `metrics`: Metriche serie A (es. ["count"]) (**obbligatorio**)
+- `metrics_b`: Metriche serie B (es. ["count"]) (**obbligatorio**)
+- `time_grain_sqla`: Granularità temporale (es. "P1M")
+
+**Parametri opzionali (default disponibili):**
+- `seriesType`: Tipo grafico serie A (default: "bar")
+- `seriesTypeB`: Tipo grafico serie B (default: null)
+- `yAxisIndex`: Indice asse Y serie A (default: 1)
+- `yAxisIndexB`: Indice asse Y serie B (default: 0)
+- `opacity`: Trasparenza serie A (default: 0.2)
+- `opacityB`: Trasparenza serie B (default: 0.2)
+- `markerSize`: Dimensione marker serie A (default: 6)
+- `markerSizeB`: Dimensione marker serie B (default: 6)
+- `color_scheme`: Schema colori (default: "supersetColors")
+- `show_legend`: Mostra legenda (default: true)
+- `row_limit`: Limite righe (default: 10000)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Mixed Chart Example",
+  "viz_type": "mixed_timeseries",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"mixed_timeseries\",\"x_axis\":\"order_date\",\"time_grain_sqla\":\"P1M\",\"metrics\":[\"count\"],\"groupby\":[],\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"order_desc\":true,\"row_limit\":10000,\"truncate_metric\":true,\"comparison_type\":\"values\",\"metrics_b\":[\"count\"],\"groupby_b\":[],\"adhoc_filters_b\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"order_desc_b\":true,\"row_limit_b\":10000,\"truncate_metric_b\":true,\"comparison_type_b\":\"values\",\"annotation_layers\":[],\"x_axis_title_margin\":15,\"y_axis_title_margin\":15,\"y_axis_title_position\":\"Left\",\"color_scheme\":\"supersetColors\",\"seriesType\":\"bar\",\"opacity\":0.2,\"markerSize\":6,\"yAxisIndex\":1,\"sort_series_type\":\"sum\",\"seriesTypeB\":null,\"opacityB\":0.2,\"markerSizeB\":6,\"yAxisIndexB\":0,\"sort_series_typeB\":\"sum\",\"show_legend\":true,\"legendType\":\"scroll\",\"legendOrientation\":\"top\",\"x_axis_time_format\":\"smart_date\",\"rich_tooltip\":true,\"tooltipTimeFormat\":\"smart_date\",\"truncateXAxis\":true,\"y_axis_bounds\":[null,null],\"y_axis_format\":\"SMART_NUMBER\",\"y_axis_bounds_secondary\":[null,null],\"y_axis_format_secondary\":\"SMART_NUMBER\",\"extra_form_data\":{},\"dashboards\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "mixed_timeseries"
+> - Combina diversi tipi di grafico in uno stesso chart
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 17. **Country Map** - Mappa Paesi
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "country_map" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `entity`: Colonna con identificatori geografici (es. "deal_size") (**obbligatorio**)
+- `metric`: Metrica da visualizzare (es. "count") (**obbligatorio**)
+- `select_country`: Paese da visualizzare (es. "usa") (**obbligatorio**)
+
+**Parametri opzionali (default disponibili):**
+- `row_limit`: Limite righe (default: 50000)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Country Map Example",
+  "viz_type": "country_map",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"country_map\",\"entity\":\"deal_size\",\"metric\":\"count\",\"select_country\":\"usa\",\"row_limit\":50000,\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "country_map"
+> - Visualizza dati geografici su mappa del paese selezionato
+> - Il campo `params` deve essere una stringa JSON
+
+---
+
+### 18. **Deck.gl Scatterplot** - Mappa Scatter
+
+**Endpoint:** `POST /api/v1/chart/`
+
+**Parametri indispensabili:**
+- `datasource_id`: ID numerico del dataset (**obbligatorio**)
+- `datasource_type`: "table" (**obbligatorio**)
+- `slice_name`: Nome del chart (**obbligatorio**)
+- `viz_type`: "deck_scatter" (**obbligatorio**)
+- `params`: Stringa JSON con configurazione (**obbligatorio**)
+
+**Parametri chiave in params:**
+- `spatial`: Configurazione coordinate (es. {"latCol":"latitude","lonCol":"longitude","type":"latlong"}) (**obbligatorio**)
+- `size`: Metrica per dimensione punti (es. "count") (**obbligatorio**)
+- `viewport`: Configurazione vista mappa (**obbligatorio**)
+
+**Parametri opzionali (default disponibili):**
+- `color_picker`: Colore punti (default: {"r":205,"g":0,"b":3,"a":0.82})
+- `mapbox_style`: Stile mappa (default: OpenStreetMap)
+- `point_unit`: Unità punti (default: "square_m")
+- `min_radius`: Raggio minimo (default: 1)
+- `max_radius`: Raggio massimo (default: 250)
+- `multiplier`: Moltiplicatore dimensione (default: 10)
+- `row_limit`: Limite righe (default: 5000)
+
+**Esempio validato (FUNZIONANTE):**
+```json
+{
+  "datasource_id": 9,
+  "datasource_type": "table",
+  "slice_name": "Deck.gl Scatterplot Example",
+  "viz_type": "deck_scatter",
+  "params": "{\"datasource\":{\"id\":9,\"type\":\"table\"},\"viz_type\":\"deck_scatter\",\"spatial\":{\"latCol\":\"latitude\",\"lonCol\":\"longitude\",\"type\":\"latlong\"},\"size\":\"count\",\"point_radius_fixed\":{\"type\":\"metric\",\"value\":\"count\"},\"color_picker\":{\"r\":205,\"g\":0,\"b\":3,\"a\":0.82},\"mapbox_style\":\"https://tile.openstreetmap.org/{z}/{x}/{y}.png\",\"viewport\":{\"latitude\":37.7893,\"longitude\":-122.4261,\"zoom\":12.7,\"bearing\":0,\"pitch\":0},\"point_unit\":\"square_m\",\"min_radius\":1,\"max_radius\":250,\"multiplier\":10,\"row_limit\":5000,\"adhoc_filters\":[{\"clause\":\"WHERE\",\"subject\":\"order_date\",\"operator\":\"TEMPORAL_RANGE\",\"comparator\":\"No filter\",\"expressionType\":\"SIMPLE\"}],\"extra_form_data\":{},\"dashboards\":[],\"annotation_layers\":[]}"
+}
+```
+
+> ⚠️ **IMPORTANTE per v6:**
+> - Usare `viz_type`: "deck_scatter"
+> - Visualizza punti su mappa interattiva con coordinate geografiche
+> - Richiede colonne con latitudine e longitudine nel dataset
 > - Il campo `params` deve essere una stringa JSON
 
 
