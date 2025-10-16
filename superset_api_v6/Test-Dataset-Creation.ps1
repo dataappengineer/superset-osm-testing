@@ -88,8 +88,10 @@ $timestamp = Get-Date -Format 'HHmmss'
 Write-Host "`nCreating dataset via API..." -ForegroundColor Yellow
 
 # Let's try creating a dataset from a specific table that we know exists
-$specificTable = "birth_names"  # This is a common table in Superset examples
+$specificTable = "energy_usage"  # Try a different table first
+$uniqueDatasetName = "test_dataset_$timestamp"  # Create unique name
 
+# First attempt: try with energy_usage table
 $datasetData = @{
     database = $databaseId
     table_name = $specificTable
@@ -106,64 +108,102 @@ try {
     Write-Host "Dataset Name: $specificTable" -ForegroundColor Green
     Write-Host "Database: $databaseName (ID: $databaseId)" -ForegroundColor Green
     
-    # Get the created dataset details
-    Write-Host "`nGetting dataset details..." -ForegroundColor Yellow
-    $datasetDetails = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/$($datasetResponse.id)" -Headers $headers
-    
-    Write-Host "Dataset Details:" -ForegroundColor Cyan
-    Write-Host "  - Dataset ID: $($datasetDetails.result.id)" -ForegroundColor White
-    Write-Host "  - Table Name: $($datasetDetails.result.table_name)" -ForegroundColor White
-    Write-Host "  - Database ID: $($datasetDetails.result.database.id)" -ForegroundColor White
-    Write-Host "  - Database Name: $($datasetDetails.result.database.database_name)" -ForegroundColor White
-    Write-Host "  - Schema: $($datasetDetails.result.schema)" -ForegroundColor White
-    Write-Host "  - SQL: $($datasetDetails.result.sql)" -ForegroundColor White
-    Write-Host "  - Columns Count: $($datasetDetails.result.columns.Count)" -ForegroundColor White
-    Write-Host "  - Metrics Count: $($datasetDetails.result.metrics.Count)" -ForegroundColor White
-    
-    if ($datasetDetails.result.columns.Count -gt 0) {
-        Write-Host "`nFirst 5 columns:" -ForegroundColor Yellow
-        $datasetDetails.result.columns | Select-Object -First 5 | ForEach-Object {
-            Write-Host "    - $($_.column_name) ($($_.type)) - Groupable: $($_.groupby)" -ForegroundColor Gray
-        }
-    }
-    
-    if ($datasetDetails.result.metrics.Count -gt 0) {
-        Write-Host "`nAvailable metrics:" -ForegroundColor Yellow
-        $datasetDetails.result.metrics | ForEach-Object {
-            Write-Host "    - $($_.metric_name): $($_.expression)" -ForegroundColor Gray
-        }
-    }
+    $createdDatasetId = $datasetResponse.id
     
 } catch {
-    Write-Host "FAILED to create dataset: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "FAILED to create dataset for $specificTable : $($_.Exception.Message)" -ForegroundColor Red
     
-    # Try to get more detailed error information
-    if ($_.Exception.Response) {
-        try {
-            $errorStream = $_.Exception.Response.GetResponseStream()
-            $reader = New-Object System.IO.StreamReader($errorStream)
-            $errorBody = $reader.ReadToEnd()
-            Write-Host "Error details: $errorBody" -ForegroundColor Red
-        } catch {
-            Write-Host "Could not read error details" -ForegroundColor Red
-        }
-    }
+    # Try with a different known table
+    Write-Host "`nTrying with alternative table: birth_names" -ForegroundColor Yellow
     
-    # If the specific table doesn't work, try with the first available table
-    Write-Host "`nTrying with first available table: $tableName" -ForegroundColor Yellow
-    
-    $fallbackData = @{
+    $altDatasetData = @{
         database = $databaseId
-        table_name = $tableName
+        table_name = "birth_names"
         schema = $null
         owners = @(1)
     } | ConvertTo-Json -Depth 10
     
     try {
-        $fallbackResponse = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/" -Method POST -Headers $headers -Body $fallbackData
-        Write-Host "SUCCESS with fallback: Dataset created with ID $($fallbackResponse.id)" -ForegroundColor Green
+        $datasetResponse = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/" -Method POST -Headers $headers -Body $altDatasetData
+        Write-Host "SUCCESS with birth_names: Dataset created with ID $($datasetResponse.id)" -ForegroundColor Green
+        $createdDatasetId = $datasetResponse.id
+        $specificTable = "birth_names"
     } catch {
-        Write-Host "Fallback also failed: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "birth_names also failed: $($_.Exception.Message)" -ForegroundColor Red
+        
+        # Final attempt: try with long_lat table
+        Write-Host "`nFinal attempt with table: long_lat" -ForegroundColor Yellow
+        
+        $finalDatasetData = @{
+            database = $databaseId
+            table_name = "long_lat"
+            schema = $null
+            owners = @(1)
+        } | ConvertTo-Json -Depth 10
+        
+        try {
+            $datasetResponse = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/" -Method POST -Headers $headers -Body $finalDatasetData
+            Write-Host "SUCCESS with long_lat: Dataset created with ID $($datasetResponse.id)" -ForegroundColor Green
+            $createdDatasetId = $datasetResponse.id
+            $specificTable = "long_lat"
+        } catch {
+            Write-Host "All attempts failed. Dataset creation not possible." -ForegroundColor Red
+            $createdDatasetId = $null
+        }
+    }
+}
+
+# If we successfully created a dataset, get its details
+if ($createdDatasetId) {
+    Write-Host "`nGetting created dataset details..." -ForegroundColor Yellow
+    try {
+        $datasetDetails = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/dataset/$createdDatasetId" -Headers $headers
+        
+        Write-Host "Dataset Details:" -ForegroundColor Cyan
+        Write-Host "  - Dataset ID: $($datasetDetails.result.id)" -ForegroundColor White
+        Write-Host "  - Table Name: $($datasetDetails.result.table_name)" -ForegroundColor White
+        Write-Host "  - Database ID: $($datasetDetails.result.database.id)" -ForegroundColor White
+        Write-Host "  - Database Name: $($datasetDetails.result.database.database_name)" -ForegroundColor White
+        Write-Host "  - Schema: $($datasetDetails.result.schema)" -ForegroundColor White
+        Write-Host "  - SQL: $($datasetDetails.result.sql)" -ForegroundColor White
+        Write-Host "  - Columns Count: $($datasetDetails.result.columns.Count)" -ForegroundColor White
+        Write-Host "  - Metrics Count: $($datasetDetails.result.metrics.Count)" -ForegroundColor White
+        
+        if ($datasetDetails.result.columns.Count -gt 0) {
+            Write-Host "`nFirst 5 columns:" -ForegroundColor Yellow
+            $datasetDetails.result.columns | Select-Object -First 5 | ForEach-Object {
+                Write-Host "    - $($_.column_name) ($($_.type)) - Groupable: $($_.groupby)" -ForegroundColor Gray
+            }
+        }
+        
+        if ($datasetDetails.result.metrics.Count -gt 0) {
+            Write-Host "`nAvailable metrics:" -ForegroundColor Yellow
+            $datasetDetails.result.metrics | ForEach-Object {
+                Write-Host "    - $($_.metric_name): $($_.expression)" -ForegroundColor Gray
+            }
+        }
+        
+        # Test creating a chart with the new dataset
+        Write-Host "`nTesting chart creation with new dataset..." -ForegroundColor Yellow
+        
+        $firstColumn = $datasetDetails.result.columns[0].column_name
+        $chartData = @{
+            datasource_id = $createdDatasetId
+            datasource_type = "table"
+            slice_name = "Test Chart - Dataset $createdDatasetId - $timestamp"
+            viz_type = "table"
+            params = "{`"datasource`":{`"id`":$createdDatasetId,`"type`":`"table`"},`"viz_type`":`"table`",`"all_columns`":[`"$firstColumn`"],`"row_limit`":10}"
+        } | ConvertTo-Json -Depth 10
+        
+        try {
+            $chartResponse = Invoke-RestMethod -Uri "$SupersetUrl/api/v1/chart/" -Method POST -Headers $headers -Body $chartData
+            Write-Host "SUCCESS: Chart created with ID $($chartResponse.id) using new dataset!" -ForegroundColor Green
+        } catch {
+            Write-Host "Chart creation failed: $($_.Exception.Message)" -ForegroundColor Red
+        }
+        
+    } catch {
+        Write-Host "Failed to get dataset details: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
