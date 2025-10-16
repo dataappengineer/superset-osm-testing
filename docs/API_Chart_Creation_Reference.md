@@ -115,6 +115,7 @@ Authorization: Bearer <access_token>
 **Parametri opzionali in params (v6):**
 - `adhoc_filters`: Filtri sui dati in formato array (default: [])
   - **Formato corretto v6**: `[{"expressionType":"SIMPLE","subject":"colonna","operator":">","comparator":100,"clause":"WHERE"}]`
+  - **Esempio**: `"comparator":100` con `"operator":">"` genera `WHERE colonna > 100`
   - Operatori: `>`, `<`, `>=`, `<=`, `==`, `!=`
 - `row_limit`: Numero massimo di righe (default: 100)
 
