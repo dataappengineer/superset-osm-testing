@@ -52,13 +52,23 @@ Il parametro `datasource_type` in Superset definisce il tipo di sorgente dati su
 
 ## 📊 Datasource Types Disponibili
 
-### 1. **table** - Tabelle Database
+### 1. **table** - Tabelle Database (Physical Datasets)
 
-**Descrizione:** Tabelle fisiche o viste nel database collegato a Superset.
+**Descrizione:** Tabelle fisiche o viste nel database collegato a Superset. Nell'UI Superset appaiono come "Physical Dataset".
+
+**Come riconoscerle nell'UI:**
+- Etichetta: **"Physical"** nella lista Datasets
+- Esempi dal tuo Superset: `users_channels`, `covid_vaccines`, `unicode_test`, `video_game_sales`
+
+**⚠️ IMPORTANTE - Architetture Multi-Layer:**
+Anche con architetture complesse (Database → Dremio → Superset), i dataset rimangono "Physical" se:
+- Superset si connette direttamente a tabelle/viste di Dremio
+- Non c'è SQL personalizzato aggiuntivo in Superset
+- Il dataset rappresenta direttamente una risorsa di Dremio
 
 **Caratteristiche:**
 - Sorgente dati più comune e stabile
-- Accesso diretto alle tabelle del database
+- Accesso diretto alle tabelle del database (o viste Dremio)
 - Performance ottimali per dataset strutturati
 - Supporto completo per tutti i tipi di chart
 
@@ -163,9 +173,13 @@ ORDER BY mese DESC, ricavi_totali DESC
 
 ---
 
-### 3. **dataset** - Dataset Virtuali
+### 3. **dataset** - Dataset Virtuali (Virtual Datasets)
 
-**Descrizione:** Dataset virtuali creati tramite l'interfaccia di Superset, basati su query SQL ma con metadata aggiuntivi.
+**Descrizione:** Dataset virtuali creati tramite l'interfaccia di Superset, basati su query SQL ma con metadata aggiuntivi. Nell'UI Superset appaiono come "Virtual Dataset".
+
+**Come riconoscerle nell'UI:**
+- Etichetta: **"Virtual"** nella lista Datasets  
+- Esempi dal tuo Superset: `hierarchical_dataset`, `project_management`, `users_channels-uzooNNtSRO`
 
 **Caratteristiche:**
 - Combinazione di flessibilità SQL e struttura dataset
@@ -322,7 +336,101 @@ GROUP BY v.data_vendita, v.regione, v.canale_vendita, p.categoria_prodotto, p.su
 
 ## 🎯 Quando Usare Ogni Tipo
 
-### 📊 **Matrice Decisionale**
+### � **Come Determinare il Tipo Corretto per i Tuoi Dataset**
+
+Per i tuoi dataset specifici, ecco come determinare il `datasource_type` corretto:
+
+#### **Step 1: Controlla l'UI Superset**
+1. Vai a **Data > Datasets**
+2. Trova il tuo dataset nella lista
+3. Guarda la colonna **"Type"**:
+   - Se dice **"Physical"** → usa `"table"`
+   - Se dice **"Virtual"** → usa `"dataset"`
+
+#### **Step 2: Esempi dai Tuoi Dataset**
+
+**Physical Datasets (usa `"table"`):**
+```json
+// Per users_channels (ID esempio: 17)
+{
+  "datasource_id": 17,
+  "datasource_type": "table",
+  "params": "{\"datasource\":{\"id\":17,\"type\":\"table\"},...}"
+}
+
+// Per covid_vaccines (ID esempio: 18)
+{
+  "datasource_id": 18,
+  "datasource_type": "table", 
+  "params": "{\"datasource\":{\"id\":18,\"type\":\"table\"},...}"
+}
+```
+
+**Virtual Datasets (usa `"dataset"`):**
+```json
+// Per hierarchical_dataset (ID esempio: 25)
+{
+  "datasource_id": 25,
+  "datasource_type": "dataset",
+  "params": "{\"datasource\":{\"id\":25,\"type\":\"dataset\"},...}"
+}
+
+// Per project_management (ID esempio: 26)
+{
+  "datasource_id": 26,
+  "datasource_type": "dataset",
+  "params": "{\"datasource\":{\"id\":26,\"type\":\"dataset\"},...}"
+}
+```
+
+#### **Step 3: Trova l'ID del Dataset**
+1. Nell'UI Superset, clicca sul dataset
+2. Guarda l'URL: `.../superset/explore/?datasource=ID__table` 
+3. L'ID è il numero prima di `__table` o `__dataset`
+
+### 🏗️ **Architetture Multi-Layer (es. Database → Dremio → Superset)**
+
+Anche con architetture complesse, il tipo di datasource dipende da **come Superset vede i dati**:
+
+#### **Scenario 1: Connessione Diretta Dremio → Superset**
+```
+Database → Dremio View → Superset Physical Dataset
+```
+- **Tipo UI**: Physical
+- **API Type**: `"table"`
+- **Esempio**: Dataset che punta direttamente a una vista Dremio
+
+#### **Scenario 2: SQL Personalizzato in Superset**
+```
+Database → Dremio → Custom SQL in Superset → Virtual Dataset  
+```
+- **Tipo UI**: Virtual
+- **API Type**: `"dataset"`
+- **Esempio**: Dataset con SQL personalizzato che interroga Dremio
+
+#### **Esempio Pratico Dremio:**
+
+**Physical Dataset (Dremio View):**
+```json
+// Dataset "sales_summary" che punta a vista Dremio
+{
+  "datasource_id": 30,
+  "datasource_type": "table",  // Anche se dietro c'è Dremio!
+  "params": "{\"datasource\":{\"id\":30,\"type\":\"table\"},...}"
+}
+```
+
+**Virtual Dataset (SQL su Dremio):**
+```json
+// Dataset con SQL: "SELECT * FROM dremio_space.sales WHERE region='EU'"
+{
+  "datasource_id": 31,
+  "datasource_type": "dataset",  // SQL personalizzato
+  "params": "{\"datasource\":{\"id\":31,\"type\":\"dataset\"},...}"
+}
+```
+
+### �📊 **Matrice Decisionale**
 
 | Scenario | Datasource Type | Motivazione |
 |----------|----------------|-------------|
